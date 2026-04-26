@@ -85,7 +85,7 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
     mPreventPopup = true;
     QMenu * menu = new QMenu(tr("Group"));
     menu->setAttribute(Qt::WA_DeleteOnClose);
-    QAction *a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("process-stop")), tr("Close group"));
+    QAction *a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("Close group"));
     connect(a,    &QAction::triggered, this, &LXQtTaskGroup::closeGroup);
     connect(menu, &QMenu::aboutToHide, this, [this] {
         mPreventPopup = false;

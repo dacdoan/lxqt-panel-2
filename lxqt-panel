@@ -3,3 +3,5 @@ sudo apt install debhelper-compat layer-shell-qt libasound2-dev libdbusmenu-lxqt
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_FLAGS="-march=broadwell" -DCMAKE_CXX_FLAGS="-march=broadwell"
 
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_FLAGS="-march=native" -DCMAKE_CXX_FLAGS="-march=native"
+
+make -C build

@@ -416,7 +416,7 @@ void LXQtWorldClock::activated(ActivationReason reason)
                 timeZoneName = QString::fromLatin1(QTimeZone::systemTimeZoneId());
 
             QTimeZone timeZone(timeZoneName.toLatin1());
-            calendarWidget->setFirstDayOfWeek(QLocale{}.firstDayOfWeek());
+            calendarWidget->setFirstDayOfWeek(Qt::Monday);
             calendarWidget->setSelectedDate(QDateTime::currentDateTime().toTimeZone(timeZone).date());
         }
         else
@@ -644,7 +644,7 @@ bool LXQtWorldClock::eventFilter(QObject * watched, QEvent * event)
             timeZoneName = QString::fromLatin1(QTimeZone::systemTimeZoneId());
         QTimeZone timeZone(timeZoneName.toLatin1());
         QDateTime tzNow = now.toTimeZone(timeZone);
-        QToolTip::showText(helpEvent->globalPos(), QLocale::system().toString(tzNow, QLocale::ShortFormat));
+        QToolTip::showText(helpEvent->globalPos(), QLocale::system().toString(tzNow, QStringLiteral("ddd, MMM d yyyy hh:mm:ss")));
         return false;
     }
     return QObject::eventFilter(watched, event);

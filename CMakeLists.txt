@@ -127,7 +127,7 @@ if(DESKTOPSWITCH_PLUGIN)
     add_subdirectory(plugin-desktopswitch)
 endif()
 
-setByDefault(FANCYMENU_PLUGIN Yes)
+setByDefault(FANCYMENU_PLUGIN No)
 if(FANCYMENU_PLUGIN)
     list(APPEND STATIC_PLUGINS "fancymenu")
     add_definitions(-DWITH_FANCYMENU_PLUGIN)

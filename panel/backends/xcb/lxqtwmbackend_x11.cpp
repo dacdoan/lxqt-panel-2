@@ -674,8 +674,8 @@ bool LXQtWMBackendX11::isAreaOverlapped(const QRect &area) const
     ignoreList |= NET::TopMenuMask;
     ignoreList |= NET::NotificationMask;
 
-    const auto wIds = KX11Extras::stackingOrder();
-    for (auto const wId : wIds)
+    const auto wId = KX11Extras::activeWindow();
+    if (wId)
     {
         KWindowInfo info(wId, NET::WMWindowType | NET::WMState | NET::WMFrameExtents | NET::WMDesktop);
         if (info.valid()
@@ -686,7 +686,7 @@ bool LXQtWMBackendX11::isAreaOverlapped(const QRect &area) const
             // check against the list of ignored types
             && !NET::typeMatchesMask(info.windowType(NET::AllTypesMask), ignoreList))
         {
-            if (info.frameGeometry().intersects(area))
+            if (info.frameGeometry().intersects(QRect(area.x() << 1, area.y() << 1, area.width() << 1, area.height() << 1)))
                 return true;
         }
     }

@@ -54,18 +54,24 @@ QuickLaunchButton::QuickLaunchButton(QuickLaunchAction * act, ILXQtPanelPlugin *
 
     const QString dndStr = QStringLiteral(" ") + tr("(Ctrl + DND)");
 
+    /*
     mMoveLeftAct = new QAction(XdgIcon::fromTheme(QStringLiteral("go-previous")), tr("Move left") + dndStr, this);
     connect(mMoveLeftAct, &QAction::triggered, this, &QuickLaunchButton::movedLeft);
 
     mMoveRightAct = new QAction(XdgIcon::fromTheme(QStringLiteral("go-next")), tr("Move right") + dndStr, this);
     connect(mMoveRightAct, &QAction::triggered, this, &QuickLaunchButton::movedRight);
+    */
 
     mDeleteAct = new QAction(XdgIcon::fromTheme(QStringLiteral("dialog-close")), tr("Remove from quicklaunch"), this);
     connect(mDeleteAct, &QAction::triggered, this, &QuickLaunchButton::selfRemove);
 
     mMenu = new QMenu(this);
+    mMenu->addAction(mDeleteAct);
+    mMenu->addSeparator();
+
     mMenu->addAction(mAct);
     mMenu->addActions(mAct->additionalActions());
+    /*
     mFirstSep = mMenu->addSeparator();
     if (mAct->type() == QuickLaunchAction::ActionType::ActionXdg)
     {
@@ -95,6 +101,7 @@ QuickLaunchButton::QuickLaunchButton(QuickLaunchAction * act, ILXQtPanelPlugin *
     mMenu->addAction(mMoveRightAct);
     mMenu->addSeparator();
     mMenu->addAction(mDeleteAct);
+    */
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, &QuickLaunchButton::customContextMenuRequested, this, &QuickLaunchButton::this_customContextMenuRequested);
@@ -114,8 +121,8 @@ void QuickLaunchButton::this_customContextMenuRequested(const QPoint & /*pos*/)
 {
     LXQtQuickLaunch *panel = qobject_cast<LXQtQuickLaunch*>(parent());
 
-    mMoveLeftAct->setEnabled(!mPlugin->panel()->isLocked() && panel && panel->indexOfButton(this) > 0);
-    mMoveRightAct->setEnabled(!mPlugin->panel()->isLocked() && panel && panel->indexOfButton(this) < panel->countOfButtons() - 1);
+    // mMoveLeftAct->setEnabled(!mPlugin->panel()->isLocked() && panel && panel->indexOfButton(this) > 0);
+    // mMoveRightAct->setEnabled(!mPlugin->panel()->isLocked() && panel && panel->indexOfButton(this) < panel->countOfButtons() - 1);
     mDeleteAct->setEnabled(!mPlugin->panel()->isLocked());
     mPlugin->willShowWindow(mMenu);
     mMenu->popup(mPlugin->panel()->calculatePopupWindowPos(mapToGlobal(QPoint(0, 0)), mMenu->sizeHint()).topLeft());
