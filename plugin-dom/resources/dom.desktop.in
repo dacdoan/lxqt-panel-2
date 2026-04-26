@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=view-web-browser-dom-tree
+
+#TRANSLATIONS_DIR=../translations

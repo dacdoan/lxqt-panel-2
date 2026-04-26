@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="ar">
+<context>
+    <name>LXQtNetworkMonitor</name>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="159"/>
+        <source>Network interface &lt;b&gt;%1&lt;/b&gt;</source>
+        <translation>واجهة الشبكة &lt;b&gt;%1&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="160"/>
+        <source>Transmitted %1</source>
+        <translation>نُقلت %1</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="161"/>
+        <source>Received %1</source>
+        <translation>استُقبلت %1</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="206"/>
+        <source>B</source>
+        <translation>بايت</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="207"/>
+        <source>KiB</source>
+        <translation>ك.بايت</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="207"/>
+        <source>MiB</source>
+        <translation>م.بايت</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="207"/>
+        <source>GiB</source>
+        <translation>غ.بايت</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="207"/>
+        <source>TiB</source>
+        <translation>ت.بايت</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitor.cpp" line="207"/>
+        <source>PiB</source>
+        <translation>ب.بايت</translation>
+    </message>
+</context>
+<context>
+    <name>LXQtNetworkMonitorConfiguration</name>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="14"/>
+        <source>Network Monitor Settings</source>
+        <translation>إعدادات مرقاب الشبكة</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="20"/>
+        <source>General</source>
+        <translation>عام</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="73"/>
+        <source>Interface</source>
+        <translation>الواجهة</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="34"/>
+        <source>Modem</source>
+        <translation>مودم</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="43"/>
+        <source>Monitor</source>
+        <translation>شاشة</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="52"/>
+        <source>Network</source>
+        <translation>شبكة</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="61"/>
+        <source>Wireless</source>
+        <translation>لاسلكي</translation>
+    </message>
+    <message>
+        <location filename="../lxqtnetworkmonitorconfiguration.ui" line="26"/>
+        <source>Icon</source>
+        <translation>الأيقونة</translation>
+    </message>
+</context>
+</TS>

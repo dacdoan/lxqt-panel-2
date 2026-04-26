@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+#Icon=network-transmit-receive
+Icon=network-wired
+

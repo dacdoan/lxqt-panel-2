@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=LXQtPanel/Plugin
+Icon=quickopen
+
+#TRANSLATIONS_DIR=../translations

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="oc">
+<context>
+    <name>ShowDesktop</name>
+    <message>
+        <location filename="../showdesktop.cpp" line="46"/>
+        <source>Show desktop</source>
+        <translation>Mostrar lo burèu</translation>
+    </message>
+    <message>
+        <location filename="../showdesktop.cpp" line="91"/>
+        <source>Show Desktop: Global shortcut &apos;%1&apos; cannot be registered</source>
+        <translation>Mostrar lo burèu : l’acorchi global « %1 » se podiá pas enregistrar</translation>
+    </message>
+    <message>
+        <location filename="../showdesktop.cpp" line="53"/>
+        <source>Show Desktop</source>
+        <translation>Mostrar lo burèu</translation>
+    </message>
+</context>
+</TS>

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+TryExec=lxqt-panel
+Exec=lxqt-panel
+OnlyShowIn=LXQt;
+X-LXQt-Module=true
+
+#TRANSLATIONS_DIR=translations

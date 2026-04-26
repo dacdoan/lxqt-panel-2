@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="bg">
+<context>
+    <name>LXQtCpuLoad</name>
+    <message>
+        <location filename="../lxqtcpuload.cpp" line="126"/>
+        <source>CPU load %1%</source>
+        <translation>CPU натоварване %1%</translation>
+    </message>
+</context>
+<context>
+    <name>LXQtCpuLoadConfiguration</name>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.ui" line="14"/>
+        <source>CPU Load Settings</source>
+        <translation>Настройки на CPU монитор</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.ui" line="20"/>
+        <source>General</source>
+        <translation>Общи</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.ui" line="26"/>
+        <source>Show text</source>
+        <translation>Показване на текст</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.ui" line="33"/>
+        <source>Update interval:</source>
+        <translation>Интервал на опресняване:</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.ui" line="40"/>
+        <source>sec</source>
+        <translation>s</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.ui" line="62"/>
+        <source>Bar orientation:</source>
+        <translation>Ориентация на индикатора:</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.ui" line="72"/>
+        <source>Bar width:</source>
+        <translation>Широчина на индикатора:</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.cpp" line="64"/>
+        <source>Bottom up</source>
+        <translation>Отдолу нагоре</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.cpp" line="65"/>
+        <source>Top down</source>
+        <translation>Отгоре надолу</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.cpp" line="66"/>
+        <source>Left to right</source>
+        <translation>Отляво надясно</translation>
+    </message>
+    <message>
+        <location filename="../lxqtcpuloadconfiguration.cpp" line="67"/>
+        <source>Right to left</source>
+        <translation>Отдясно наляво</translation>
+    </message>
+</context>
+</TS>

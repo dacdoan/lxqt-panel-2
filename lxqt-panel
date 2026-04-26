@@ -1,0 +1,5 @@
+sudo apt install debhelper-compat layer-shell-qt libasound2-dev libdbusmenu-lxqt0-dev libglib2.0-dev libicu-dev libkf6solid-dev libkf6windowsystem-dev liblayershellqtinterface-dev liblxqt-globalkeys-ui2-dev liblxqt-globalkeys2-dev liblxqt2-dev libpulse-dev libsensors-dev libstatgrab-dev libsysstat-qt6-1-dev libx11-dev libxcb-composite0-dev libxcb-damage0-dev libxcb-image0-dev libxcb-randr0-dev libxcb-shm0-dev libxcb-util-dev libxcb-xkb-dev libxdamage-dev libxkbcommon-dev libxkbcommon-x11-dev libxrender-dev libxtst-dev lxqt-menu-data qt6-base-private-dev qt6-svg-dev qt6-wayland-dev qt6-wayland-private-dev
+
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_FLAGS="-march=broadwell" -DCMAKE_CXX_FLAGS="-march=broadwell"
+
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_FLAGS="-march=native" -DCMAKE_CXX_FLAGS="-march=native"
