@@ -137,12 +137,12 @@ void LXQtQuickLaunch::realign()
     {
         if (panel->isHorizontal())
         {
-            mLayout->setRowCount(panel->lineCount());
+            mLayout->setRowCount(panel->lineCount() << 1);
             mLayout->setColumnCount(0);
         }
         else
         {
-            mLayout->setColumnCount(panel->lineCount());
+            mLayout->setColumnCount(panel->lineCount() << 1);
             mLayout->setRowCount(0);
         }
     }
