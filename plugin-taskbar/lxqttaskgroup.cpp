@@ -54,14 +54,15 @@ LXQtTaskGroup::LXQtTaskGroup(const QString &groupName, WId window, LXQtTaskBar *
     mGroupName(groupName),
     mPopup(new LXQtGroupPopup(this)),
     mPreventPopup(false),
-    mSingleButton(true)
+    mSingleButton(true),
+    mPinned(int((qint64)window < 0))
 {
     Q_ASSERT(parent);
 
     setObjectName(groupName);
     setTextExplicitly(groupName);
 
-    connect(this,   &LXQtTaskGroup::clicked,                           this, &LXQtTaskGroup::onClicked);
+    // connect(this,   &LXQtTaskGroup::clicked,                           this, &LXQtTaskGroup::onClicked);
     connect(parent, &LXQtTaskBar::buttonRotationRefreshed,             this, &LXQtTaskGroup::setAutoRotation);
     connect(parent, &LXQtTaskBar::refreshIconGeometry,                 this, &LXQtTaskGroup::refreshIconsGeometry);
     connect(parent, &LXQtTaskBar::buttonStyleRefreshed,                this, &LXQtTaskGroup::setToolButtonsStyle);
@@ -77,7 +78,7 @@ LXQtTaskGroup::LXQtTaskGroup(const QString &groupName, WId window, LXQtTaskBar *
 void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
 {
     setPopupVisible(false, true);
-    if (mSingleButton)
+    if (mSingleButton && !mPinned)
     {
         LXQtTaskButton::contextMenuEvent(event);
         return;
@@ -85,8 +86,27 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
     mPreventPopup = true;
     QMenu * menu = new QMenu(tr("Group"));
     menu->setAttribute(Qt::WA_DeleteOnClose);
-    QAction *a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("Close group"));
-    connect(a,    &QAction::triggered, this, &LXQtTaskGroup::closeGroup);
+    QAction *a;
+
+    if (mPinned) {
+        XdgDesktopFile xdg = parentTaskBar()->getXdg(windowId());
+
+        a = menu->addAction(xdg.icon(), xdg.name());
+        connect(a, &QAction::triggered, this, [this] { execAction(); });
+
+        for (auto const & action : const_cast<const QStringList &&>(xdg.actions())) {
+            a = menu->addAction(xdg.actionIcon(action), xdg.actionName(action));
+            a->setData(action);
+            connect(a, &QAction::triggered, this, [this, a] { execAction(a->data().toString()); });
+        }
+        menu->addSeparator();
+    }
+
+    if (isChecked()) {
+        a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Exit"));
+        connect(a,    &QAction::triggered, this, &LXQtTaskGroup::closeGroup);
+    }
+
     connect(menu, &QMenu::aboutToHide, this, [this] {
         mPreventPopup = false;
     });
@@ -116,7 +136,7 @@ LXQtTaskButton * LXQtTaskGroup::addWindow(WId id)
     LXQtTaskButton *btn = new LXQtTaskButton(id, parentTaskBar(), mPopup);
     btn->setToolButtonStyle(popupButtonStyle());
 
-    if (btn->isApplicationActive())
+    if ((qint64)id > 0)
     {
         btn->setChecked(true);
         setChecked(true);
@@ -195,16 +215,7 @@ LXQtTaskButton * LXQtTaskGroup::getNextPrevChildButton(bool next, bool circular)
 void LXQtTaskGroup::onActiveWindowChanged(WId window)
 {
     LXQtTaskButton *button = mButtonHash.value(window, nullptr);
-    for (LXQtTaskButton *btn : std::as_const(mButtonHash))
-        btn->setChecked(false);
-
-    if (button)
-    {
-        button->setChecked(true);
-        if (button->hasUrgencyHint())
-            button->setUrgencyHint(false);
-    }
-    setChecked(nullptr != button && button->isVisibleTo(mPopup));
+    if (button && button->isVisibleTo(mPopup)) mActiveWindow = window;
 }
 
 /************************************************
@@ -322,9 +333,10 @@ void LXQtTaskGroup::regroup()
     int cont = visibleButtonsCount();
     recalculateFrameIfVisible();
 
-    if (cont == 1)
+    if (cont == 1 || cont - mPinned == 1)
     {
         mSingleButton = true;
+        if (mPinned) return;
         // Get first visible button
         LXQtTaskButton * button = nullptr;
         for (LXQtTaskButton *btn : std::as_const(mButtonHash))
@@ -384,6 +396,7 @@ void LXQtTaskGroup::setAutoRotation(bool value, ILXQtPanel::Position position)
 void LXQtTaskGroup::refreshVisibility()
 {
     bool will = false;
+    bool checked = false;
     LXQtTaskBar const * taskbar = parentTaskBar();
     const int showDesktop = taskbar->showDesktopNum();
     for(LXQtTaskButton * btn : std::as_const(mButtonHash))
@@ -393,10 +406,12 @@ void LXQtTaskGroup::refreshVisibility()
         visible &= taskbar->isShowOnlyMinimizedTasks() ? btn->isMinimized() : true;
         btn->setVisible(visible);
         will |= visible;
+        if ((qint64)btn->windowId() > 0) checked |= visible;
         // correct the checked state if this button is checked
-        if (btn->isChecked())
-            setChecked(visible);
+        // if (btn->isChecked())
+        //     setChecked(visible);
     }
+    setChecked(checked);
 
     bool is = isVisible();
     setVisible(will);
@@ -595,11 +610,23 @@ void LXQtTaskGroup::mouseMoveEvent(QMouseEvent* event)
 
 void LXQtTaskGroup::mouseReleaseEvent(QMouseEvent* event)
 {
+    bool checked = isChecked();
     // do nothing on left button release if there is a group
-    if (event->button() == Qt::LeftButton && visibleButtonsCount() == 1)
-        LXQtTaskButton::mouseReleaseEvent(event);
-    else
-        QToolButton::mouseReleaseEvent(event);
+    if (event->button() == Qt::LeftButton) {
+        if (visibleButtonsCount() == 1) return LXQtTaskButton::mouseReleaseEvent(event);
+        LXQtTaskButton *button = mButtonHash.value(mActiveWindow, nullptr);
+        if (button && button->isVisibleTo(mPopup)) {
+            button->raiseApplication();
+        } else {
+            for (LXQtTaskButton *btn : std::as_const(mButtonHash))
+                if ((qint64)btn->windowId() > 0 && btn->isVisibleTo(mPopup)) {
+                    btn->raiseApplication();
+                    break;
+                }
+        }
+    }
+    QToolButton::mouseReleaseEvent(event);
+    setChecked(checked);
 }
 
 /************************************************

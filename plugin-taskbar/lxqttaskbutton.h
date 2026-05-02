@@ -102,6 +102,7 @@ public slots:
     void setOrigin(Qt::Corner);
 
     void updateIcon();
+    void execAction(QString additionalAction = QString{});
 
 protected:
     virtual void changeEvent(QEvent *event);

@@ -41,6 +41,9 @@
 #include <QFlag>
 #include <QTimer>
 
+#include <XdgDesktopFile>
+#include <QFileInfo>
+
 #include "../panel/ilxqtpanelplugin.h"
 #include "../panel/pluginsettings.h"
 
@@ -104,9 +107,28 @@ LXQtTaskBar::LXQtTaskBar(ILXQtPanelPlugin *plugin, QWidget *parent) :
     connect(mSignalMapper, &QSignalMapper::mappedInt, this, &LXQtTaskBar::activateTask);
     QTimer::singleShot(0, this, &LXQtTaskBar::registerShortcuts);
 
-    connect(mBackend, &ILXQtAbstractWMInterface::windowPropertyChanged, this, &LXQtTaskBar::onWindowChanged);
+    // connect(mBackend, &ILXQtAbstractWMInterface::windowPropertyChanged, this, &LXQtTaskBar::onWindowChanged);
     connect(mBackend, &ILXQtAbstractWMInterface::windowAdded, this, &LXQtTaskBar::onWindowAdded);
     connect(mBackend, &ILXQtAbstractWMInterface::windowRemoved, this, &LXQtTaskBar::onWindowRemoved);
+
+    // Add pinned apps as buttons to the taskbar
+    WId appId = -1;
+    const auto apps = mPlugin->settings()->readArray(QStringLiteral("apps"));
+    for (const QMap<QString, QVariant> &app : apps) {
+        XdgDesktopFile xdg;
+        if (!xdg.load(app.value(QStringLiteral("desktop"), QString()).toString())) {
+            qDebug() << "XdgDesktopFile" << xdg.fileName() << "is not valid";
+            continue;
+        }
+        if (!xdg.isSuitable()) {
+            qDebug() << "XdgDesktopFile" << xdg.fileName() << "is not applicable";
+            continue;
+        }
+        // Store xdg to a map of windowId to xdg
+        mPinnedApps.insert(appId, xdg);
+        onWindowAdded(appId);
+        --appId;
+    }
 
     // Consider already fetched windows
     const auto initialWindows = mBackend->getCurrentWindows();
@@ -248,10 +270,17 @@ void LXQtTaskBar::groupBecomeEmptySlot()
  ************************************************/
 void LXQtTaskBar::addWindow(WId window)
 {
-    if (mExcludedList.contains(mBackend->getWindowClass(window), Qt::CaseInsensitive))
+    bool pinned = (qint64)window < 0;
+    if (!pinned && mExcludedList.contains(mBackend->getWindowClass(window), Qt::CaseInsensitive))
         return;
     // If grouping disabled group behaves like regular button
-    const QString group_id = mGroupingEnabled ? mBackend->getWindowClass(window) : QString::number(window);
+    QString group_id;
+    if (pinned) {
+        XdgDesktopFile xdg = mPinnedApps[window];
+        group_id = xdg.value(QStringLiteral("StartupWMClass"), QFileInfo(xdg.fileName()).baseName()).toString().toLower();
+    } else {
+        group_id = mGroupingEnabled ? mBackend->getWindowClass(window).toLower() : QString::number(window);
+    }
 
     LXQtTaskGroup *group = nullptr;
     auto i_group = mKnownWindows.find(window);

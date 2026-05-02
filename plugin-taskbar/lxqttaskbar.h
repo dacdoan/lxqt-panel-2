@@ -35,6 +35,7 @@
 #include <QFrame>
 #include <QBoxLayout>
 #include <QMap>
+#include <XdgDesktopFile>
 
 #include "../panel/ilxqtpanel.h"
 
@@ -88,6 +89,8 @@ public:
 
     inline ILXQtAbstractWMInterface *getBackend() const { return mBackend; }
 
+    inline XdgDesktopFile getXdg(WId appId) const { return mPinnedApps.value(appId); }
+
 public slots:
     void settingsChanged();
 
@@ -126,6 +129,7 @@ private:
 
 private:
     QMap<WId, LXQtTaskGroup*> mKnownWindows; //!< Ids of known windows (mapping to buttons/groups)
+    QMap<WId, XdgDesktopFile> mPinnedApps;   //!< Pinned apps not yet mapped to a real window (negative WId sentinels)
     LXQt::GridLayout *mLayout;
     QList<GlobalKeyShortcut::Action*> mKeys;
     QSignalMapper *mSignalMapper;

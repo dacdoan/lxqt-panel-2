@@ -101,6 +101,8 @@ LXQtTaskButton::LXQtTaskButton(const WId window, LXQtTaskBar * taskbar, QWidget 
     updateText();
     updateIcon();
 
+    if ((qint64)mWindow < 0) return;
+
     mDNDTimer->setSingleShot(true);
     mDNDTimer->setInterval(700);
     connect(mDNDTimer, &QTimer::timeout, this, &LXQtTaskButton::raiseApplication);
@@ -127,7 +129,13 @@ LXQtTaskButton::~LXQtTaskButton() = default;
  ************************************************/
 void LXQtTaskButton::updateText()
 {
-    QString title = mBackend->getWindowTitle(mWindow);
+    QString title;
+    if ((qint64)mWindow < 0) {
+        XdgDesktopFile xdg = mParentTaskBar->getXdg(mWindow);
+        title = xdg.name();
+    } else {
+        title = mBackend->getWindowTitle(mWindow);
+    }
     setTextExplicitly(title.replace(QStringLiteral("&"), QStringLiteral("&&")));
     setToolTip(title);
 }
@@ -141,6 +149,11 @@ void LXQtTaskButton::updateIcon()
     if (mParentTaskBar->isIconByClass())
     {
         ico = XdgIcon::fromTheme(mBackend->getWindowClass(mWindow).toLower());
+    }
+    else if ((qint64)mWindow < 0)
+    {
+        XdgDesktopFile xdg = mParentTaskBar->getXdg(mWindow);
+        ico = xdg.icon();
     }
     if (ico.isNull())
     {
@@ -239,11 +252,22 @@ void LXQtTaskButton::mouseReleaseEvent(QMouseEvent* event)
     QToolButton::mouseReleaseEvent(event);
     if (!sDraggging && event->button() == Qt::LeftButton)
     {
-        if (!isChecked())
-            minimizeApplication();
-        else
+        if ((qint64)mWindow < 0) {
+            execAction();
+        } else {
             raiseApplication();
+        }
+        setChecked(true);
     }
+}
+
+void LXQtTaskButton::execAction(QString additionalAction)
+{
+    XdgDesktopFile xdg = mParentTaskBar->getXdg(mWindow);
+    if (additionalAction.isEmpty())
+        xdg.startDetached();
+    else
+        xdg.actionActivate(additionalAction, QStringList{});
 }
 
 /************************************************
@@ -398,6 +422,7 @@ bool LXQtTaskButton::isApplicationHidden() const
  ************************************************/
 bool LXQtTaskButton::isApplicationActive() const
 {
+    if ((qint64)mWindow < 0) return false;
     return mBackend->isWindowActive(mWindow);
 }
 
@@ -715,7 +740,7 @@ void LXQtTaskButton::contextMenuEvent(QContextMenuEvent* event)
 
     /********** Kill menu **********/
     menu->addSeparator();
-    a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Close"));
+    a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Exit"));
     connect(a, &QAction::triggered, this, &LXQtTaskButton::closeApplication);
 
     menu->setGeometry(mParentTaskBar->panel()->calculatePopupWindowPos(mapToGlobal(event->pos()), menu->sizeHint()));
@@ -743,12 +768,14 @@ void LXQtTaskButton::setUrgencyHint(bool set)
  ************************************************/
 bool LXQtTaskButton::isOnDesktop(int desktop) const
 {
+    if ((qint64)mWindow < 0) return true;
     int d = mBackend->getWindowWorkspace(mWindow);
     return d == desktop || d == mBackend->onAllWorkspacesEnum();
 }
 
 bool LXQtTaskButton::isOnCurrentScreen() const
 {
+    if ((qint64)mWindow < 0) return true;
     QScreen *screen = parentTaskBar()->screen();
     return mBackend->isWindowOnScreen(screen, mWindow);
 }
