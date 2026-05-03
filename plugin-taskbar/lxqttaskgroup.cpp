@@ -54,8 +54,7 @@ LXQtTaskGroup::LXQtTaskGroup(const QString &groupName, WId window, LXQtTaskBar *
     mGroupName(groupName),
     mPopup(new LXQtGroupPopup(this)),
     mPreventPopup(false),
-    mSingleButton(true),
-    mPinned(int((qint64)window < 0))
+    mSingleButton(true)
 {
     Q_ASSERT(parent);
 
@@ -78,7 +77,7 @@ LXQtTaskGroup::LXQtTaskGroup(const QString &groupName, WId window, LXQtTaskBar *
 void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
 {
     setPopupVisible(false, true);
-    if (mSingleButton && !mPinned)
+    if (mSingleButton && (qint64)windowId() > 0)
     {
         LXQtTaskButton::contextMenuEvent(event);
         return;
@@ -88,7 +87,7 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
     menu->setAttribute(Qt::WA_DeleteOnClose);
     QAction *a;
 
-    if (mPinned) {
+    if (windowId() >> 63) {
         XdgDesktopFile xdg = parentTaskBar()->getXdg(windowId());
 
         a = menu->addAction(xdg.icon(), xdg.name());
@@ -239,7 +238,7 @@ void LXQtTaskGroup::onWindowRemoved(WId window)
         button->deleteLater();
 
         if (mButtonHash.count())
-            regroup();
+            refreshVisibility();
         else
         {
             if (isVisible())
@@ -333,10 +332,9 @@ void LXQtTaskGroup::regroup()
     int cont = visibleButtonsCount();
     recalculateFrameIfVisible();
 
-    if (cont == 1 || cont - mPinned == 1)
+    if (cont == 1)
     {
         mSingleButton = true;
-        if (mPinned) return;
         // Get first visible button
         LXQtTaskButton * button = nullptr;
         for (LXQtTaskButton *btn : std::as_const(mButtonHash))

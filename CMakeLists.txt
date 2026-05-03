@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.18.0 FATAL_ERROR)
 project(lxqt-panel)
 
 option(UPDATE_TRANSLATIONS "Update source translation translations/*.ts files" OFF)
-option(WITH_SCREENSAVER_FALLBACK "Include support for converting the deprecated 'screensaver' plugin to 'quicklaunch'. This requires the lxqt-leave (lxqt-session) to be installed in runtime." ON)
+option(WITH_SCREENSAVER_FALLBACK "Include support for converting the deprecated 'screensaver' plugin to 'quicklaunch'. This requires the lxqt-leave (lxqt-session) to be installed in runtime." OFF)
 
 # additional cmake files
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -155,7 +155,7 @@ if(MOUNT_PLUGIN)
     add_subdirectory(plugin-mount)
 endif(MOUNT_PLUGIN)
 
-setByDefault(QUICKLAUNCH_PLUGIN Yes)
+setByDefault(QUICKLAUNCH_PLUGIN No)
 if(QUICKLAUNCH_PLUGIN)
     list(APPEND STATIC_PLUGINS "quicklaunch")
     add_definitions(-DWITH_QUICKLAUNCH_PLUGIN)
@@ -174,7 +174,7 @@ if(SENSORS_PLUGIN)
     add_subdirectory(plugin-sensors)
 endif()
 
-setByDefault(SHOWDESKTOP_PLUGIN Yes)
+setByDefault(SHOWDESKTOP_PLUGIN No)
 if(SHOWDESKTOP_PLUGIN)
     list(APPEND STATIC_PLUGINS "showdesktop")
     add_definitions(-DWITH_SHOWDESKTOP_PLUGIN)

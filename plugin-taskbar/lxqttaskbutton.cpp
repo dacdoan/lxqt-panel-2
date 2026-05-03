@@ -101,7 +101,7 @@ LXQtTaskButton::LXQtTaskButton(const WId window, LXQtTaskBar * taskbar, QWidget 
     updateText();
     updateIcon();
 
-    if ((qint64)mWindow < 0) return;
+    if (mWindow >> 63) return;
 
     mDNDTimer->setSingleShot(true);
     mDNDTimer->setInterval(700);
@@ -130,7 +130,7 @@ LXQtTaskButton::~LXQtTaskButton() = default;
 void LXQtTaskButton::updateText()
 {
     QString title;
-    if ((qint64)mWindow < 0) {
+    if (mWindow >> 63) {
         XdgDesktopFile xdg = mParentTaskBar->getXdg(mWindow);
         title = xdg.name();
     } else {
@@ -150,7 +150,7 @@ void LXQtTaskButton::updateIcon()
     {
         ico = XdgIcon::fromTheme(mBackend->getWindowClass(mWindow).toLower());
     }
-    else if ((qint64)mWindow < 0)
+    else if (mWindow >> 63)
     {
         XdgDesktopFile xdg = mParentTaskBar->getXdg(mWindow);
         ico = xdg.icon();
@@ -252,12 +252,13 @@ void LXQtTaskButton::mouseReleaseEvent(QMouseEvent* event)
     QToolButton::mouseReleaseEvent(event);
     if (!sDraggging && event->button() == Qt::LeftButton)
     {
-        if ((qint64)mWindow < 0) {
+        if (mWindow >> 63) {
             execAction();
+            setChecked(false);
         } else {
             raiseApplication();
+            setChecked(true);
         }
-        setChecked(true);
     }
 }
 
@@ -422,7 +423,7 @@ bool LXQtTaskButton::isApplicationHidden() const
  ************************************************/
 bool LXQtTaskButton::isApplicationActive() const
 {
-    if ((qint64)mWindow < 0) return false;
+    if (mWindow >> 63) return false;
     return mBackend->isWindowActive(mWindow);
 }
 
@@ -561,7 +562,7 @@ void LXQtTaskButton::resizeApplication()
  ************************************************/
 void LXQtTaskButton::contextMenuEvent(QContextMenuEvent* event)
 {
-    if (event->modifiers().testFlag(Qt::ControlModifier))
+    if (mWindow >> 63 || event->modifiers().testFlag(Qt::ControlModifier))
     {
         event->ignore();
         return;
@@ -768,14 +769,14 @@ void LXQtTaskButton::setUrgencyHint(bool set)
  ************************************************/
 bool LXQtTaskButton::isOnDesktop(int desktop) const
 {
-    if ((qint64)mWindow < 0) return true;
+    if (mWindow >> 63) return true;
     int d = mBackend->getWindowWorkspace(mWindow);
     return d == desktop || d == mBackend->onAllWorkspacesEnum();
 }
 
 bool LXQtTaskButton::isOnCurrentScreen() const
 {
-    if ((qint64)mWindow < 0) return true;
+    if (mWindow >> 63) return true;
     QScreen *screen = parentTaskBar()->screen();
     return mBackend->isWindowOnScreen(screen, mWindow);
 }

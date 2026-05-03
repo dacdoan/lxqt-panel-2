@@ -270,7 +270,7 @@ void LXQtTaskBar::groupBecomeEmptySlot()
  ************************************************/
 void LXQtTaskBar::addWindow(WId window)
 {
-    bool pinned = (qint64)window < 0;
+    bool pinned = window >> 63;
     if (!pinned && mExcludedList.contains(mBackend->getWindowClass(window), Qt::CaseInsensitive))
         return;
     // If grouping disabled group behaves like regular button
