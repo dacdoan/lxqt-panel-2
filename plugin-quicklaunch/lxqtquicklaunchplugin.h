@@ -42,7 +42,7 @@ public:
     ~LXQtQuickLaunchPlugin();
 
     virtual QWidget *widget();
-    virtual QString themeId() const { return QStringLiteral("QuickLaunch"); }
+    virtual QString themeId() const { return QStringLiteral("TaskBar"); }
     virtual Flags flags() const { return NeedsHandle; }
 
     void realign();
@@ -54,7 +54,7 @@ private:
 };
 
 
-class LXQtQuickLaunchPluginLibrary: public QObject, public ILXQtPanelPluginLibrary
+class LXQtTaskBarPluginLibrary: public QObject, public ILXQtPanelPluginLibrary
 {
     Q_OBJECT
     // Q_PLUGIN_METADATA(IID "lxqt.org/Panel/PluginInterface/3.0")

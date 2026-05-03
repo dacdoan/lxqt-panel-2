@@ -1,4 +1,4 @@
-set(PLUGIN "quicklaunch")
+set(PLUGIN "taskbar")
 
 set(HEADERS
     lxqtquicklaunchplugin.h

@@ -211,7 +211,7 @@ if(TASKBAR_PLUGIN)
   list(APPEND STATIC_PLUGINS "taskbar")
   add_definitions(-DWITH_TASKBAR_PLUGIN)
   list(APPEND ENABLED_PLUGINS "Taskbar")
-  add_subdirectory(plugin-taskbar)
+  add_subdirectory(plugin-quicklaunch)
 endif()
 
 setByDefault(STATUSNOTIFIER_PLUGIN Yes)
