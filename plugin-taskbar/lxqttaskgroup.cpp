@@ -102,7 +102,7 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
     }
 
     if (isChecked()) {
-        a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Exit"));
+        a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Quit"));
         connect(a,    &QAction::triggered, this, &LXQtTaskGroup::closeGroup);
     }
 

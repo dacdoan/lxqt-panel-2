@@ -741,7 +741,7 @@ void LXQtTaskButton::contextMenuEvent(QContextMenuEvent* event)
 
     /********** Kill menu **********/
     menu->addSeparator();
-    a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Exit"));
+    a = menu->addAction(tr("&Quit"));
     connect(a, &QAction::triggered, this, &LXQtTaskButton::closeApplication);
 
     menu->setGeometry(mParentTaskBar->panel()->calculatePopupWindowPos(mapToGlobal(event->pos()), menu->sizeHint()));
