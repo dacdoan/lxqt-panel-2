@@ -100,6 +100,7 @@ public:
     virtual bool showDesktop(bool value) override;
 
 private slots:
+    void onActiveWindowChanged(WId windowId);
     void onWindowChanged(WId windowId, NET::Properties prop, NET::Properties2 prop2);
     void onWindowAdded(WId windowId);
     void onWindowRemoved(WId windowId);

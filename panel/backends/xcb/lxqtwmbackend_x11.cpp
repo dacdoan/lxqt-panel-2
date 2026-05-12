@@ -64,7 +64,14 @@ LXQtWMBackendX11::LXQtWMBackendX11(QObject *parent)
         emit workspaceNameChanged(-1); // without specifying an index
     });
 
-    connect(KX11Extras::self(), &KX11Extras::activeWindowChanged,   this, &ILXQtAbstractWMInterface::activeWindowChanged);
+    connect(KX11Extras::self(), &KX11Extras::activeWindowChanged,   this, &LXQtWMBackendX11::onActiveWindowChanged);
+}
+
+void LXQtWMBackendX11::onActiveWindowChanged(WId windowId)
+{
+    if (windowId) {
+        emit windowPropertyChanged(windowId, int(LXQtTaskBarWindowProperty::State));
+    }
 }
 
 /************************************************
