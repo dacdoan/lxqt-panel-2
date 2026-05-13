@@ -256,7 +256,10 @@ void LXQtTaskButton::mouseReleaseEvent(QMouseEvent* event)
             execAction();
             setChecked(false);
         } else {
-            raiseApplication();
+            if (mBackend->isWindowActive(mWindow))
+                minimizeApplication();
+            else
+                raiseApplication();
             setChecked(true);
         }
     }
