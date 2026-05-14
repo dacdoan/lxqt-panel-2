@@ -107,7 +107,7 @@ LXQtTaskBar::LXQtTaskBar(ILXQtPanelPlugin *plugin, QWidget *parent) :
     connect(mSignalMapper, &QSignalMapper::mappedInt, this, &LXQtTaskBar::activateTask);
     QTimer::singleShot(0, this, &LXQtTaskBar::registerShortcuts);
 
-    // connect(mBackend, &ILXQtAbstractWMInterface::windowPropertyChanged, this, &LXQtTaskBar::onWindowChanged);
+    connect(mBackend, &ILXQtAbstractWMInterface::windowPropertyChanged, this, &LXQtTaskBar::onWindowChanged);
     connect(mBackend, &ILXQtAbstractWMInterface::windowAdded, this, &LXQtTaskBar::onWindowAdded);
     connect(mBackend, &ILXQtAbstractWMInterface::windowRemoved, this, &LXQtTaskBar::onWindowRemoved);
 

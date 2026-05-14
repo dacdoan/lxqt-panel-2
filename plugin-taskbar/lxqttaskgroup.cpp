@@ -102,7 +102,14 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
 
     if (isChecked()) {
         menu->addSeparator();
-        
+        for (LXQtTaskButton *btn : std::as_const(mButtonHash))
+            if ((qint64)btn->windowId() > 0 && btn->isVisibleTo(mPopup)) {
+                QAction *a = menu->addAction(btn->icon(), btn->text());
+                connect(a, &QAction::triggered, this, [this, btn] { btn->raiseApplication(); });
+            }
+
+        menu->addSeparator();
+
         a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-minimize")), tr("&Minimize"));
         connect(a,    &QAction::triggered, this, &LXQtTaskGroup::minimizeGroup);
 
