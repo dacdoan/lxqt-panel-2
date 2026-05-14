@@ -98,10 +98,14 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
             a->setData(action);
             connect(a, &QAction::triggered, this, [this, a] { execAction(a->data().toString()); });
         }
-        menu->addSeparator();
     }
 
     if (isChecked()) {
+        menu->addSeparator();
+        
+        a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-minimize")), tr("&Minimize"));
+        connect(a,    &QAction::triggered, this, &LXQtTaskGroup::minimizeGroup);
+
         a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Quit"));
         connect(a,    &QAction::triggered, this, &LXQtTaskGroup::closeGroup);
     }
@@ -112,6 +116,13 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
     menu->setGeometry(plugin()->panel()->calculatePopupWindowPos(mapToGlobal(event->pos()), menu->sizeHint()));
     plugin()->willShowWindow(menu);
     menu->show();
+}
+
+void LXQtTaskGroup::minimizeGroup()
+{
+    for (LXQtTaskButton *button : std::as_const(mButtonHash))
+        if (button->isOnDesktop(mBackend->getCurrentWorkspace()))
+            button->minimizeApplication();
 }
 
 /************************************************
