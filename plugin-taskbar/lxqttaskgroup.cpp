@@ -107,7 +107,7 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
                 QString title = btn->text();
                 if (title.length() > 68)
                     title = title.left(30) + QStringLiteral("\u2026") + title.right(30);
-                a = menu->addAction(btn->icon(), title);
+                a = menu->addAction(btn->windowId() == mActiveWindow ? XdgIcon::fromTheme(QStringLiteral("object-select")) : btn->icon(), title);
                 connect(a, &QAction::triggered, this, [this, btn] { btn->raiseApplication(); });
             }
 
