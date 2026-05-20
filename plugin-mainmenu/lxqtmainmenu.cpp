@@ -59,25 +59,13 @@ LXQtMainMenu::LXQtMainMenu(const ILXQtPanelPluginStartupInfo &startupInfo):
     QObject(),
     ILXQtPanelPlugin(startupInfo),
     mMenu(nullptr),
-    mShortcut(nullptr),
-    mSearchEditAction{new QWidgetAction{this}},
-    mSearchViewAction{new QWidgetAction{this}},
-    mMakeDirtyAction{new QAction{this}},
-    mFilterMenu(true),
-    mFilterShow(true),
-    mFilterClear(false),
-    mFilterShowHideMenu(true),
-    mHeavyMenuChanges(false)
+    mShortcut(nullptr)
 {
     mDelayedPopup.setSingleShot(true);
     mDelayedPopup.setInterval(200);
     connect(&mDelayedPopup, &QTimer::timeout, this, &LXQtMainMenu::showHideMenu);
     mHideTimer.setSingleShot(true);
     mHideTimer.setInterval(250);
-
-    mSearchTimer.setSingleShot(true);
-    connect(&mSearchTimer, &QTimer::timeout, this, &LXQtMainMenu::searchMenu);
-    mSearchTimer.setInterval(350); // typing speed (not very fast)
 
     mButton.setAutoRaise(true);
     mButton.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -93,24 +81,6 @@ LXQtMainMenu::LXQtMainMenu(const ILXQtPanelPluginStartupInfo &startupInfo):
 
     connect(&mButton, &QToolButton::clicked, this, &LXQtMainMenu::showHideMenu);
 
-    mSearchView = new ActionView;
-    mSearchView->setVisible(false);
-    // NOTE: Qt 6.8.0 has a bug that does not allow context menus with the Qt::Popup flag.
-    // As a workaround, we at least fully handle the the RightButton releases in eventFilter.
-    mSearchView->setContextMenuPolicy(Qt::CustomContextMenu);
-    mSearchView->viewport()->installEventFilter(this);
-    connect(mSearchView, &QAbstractItemView::activated, this, &LXQtMainMenu::showHideMenu);
-    connect(mSearchView, &ActionView::requestShowHideMenu, this, &LXQtMainMenu::showHideMenu);
-    connect(mSearchView, &QWidget::customContextMenuRequested, this, std::bind(&LXQtMainMenu::onRequestingCustomMenu, this, std::placeholders::_1, mSearchView));
-    mSearchViewAction->setDefaultWidget(mSearchView);
-    mSearchEdit = new QLineEdit;
-    mSearchEdit->setClearButtonEnabled(true);
-    mSearchEdit->setPlaceholderText(LXQtMainMenu::tr("Search..."));
-    connect(mSearchEdit, &QLineEdit::textChanged, this, [this] (QString const &) {
-        mSearchTimer.start();
-    });
-    connect(mSearchEdit, &QLineEdit::returnPressed, mSearchView, &ActionView::activateCurrent);
-    mSearchEditAction->setDefaultWidget(mSearchEdit);
     QTimer::singleShot(0, this, [this] {
         settingsChanged();
     });
@@ -147,8 +117,6 @@ LXQtMainMenu::~LXQtMainMenu()
     mButton.parentWidget()->removeEventFilter(this);
     if (mMenu)
     {
-        mMenu->removeAction(mSearchEditAction);
-        mMenu->removeAction(mSearchViewAction);
         delete mMenu;
     }
 }
@@ -177,14 +145,6 @@ void LXQtMainMenu::showMenu()
     // Just using Qt`s activateWindow() won't work on some WMs like Kwin.
     // Solution is to execute menu 1ms later using timer
     mMenu->popup(calculatePopupWindowPos(mMenu->sizeHint()).topLeft());
-    if (mFilterMenu || mFilterShow)
-    {
-        //Note: part of the workadound for https://bugreports.qt.io/browse/QTBUG-52021
-        mSearchEdit->setReadOnly(false);
-        //the setReadOnly also changes the cursor, override it back to normal
-        mSearchEdit->unsetCursor();
-        mSearchEdit->setFocus();
-    }
 }
 
 /************************************************
@@ -232,23 +192,6 @@ void LXQtMainMenu::settingsChanged()
     }
 
     setMenuFontSize();
-
-    //clear the search to not leaving the menu in wrong state
-    mSearchEdit->setText(QString{});
-    mFilterMenu = settings()->value(QStringLiteral("filterMenu"), true).toBool();
-    mFilterShow = settings()->value(QStringLiteral("filterShow"), true).toBool();
-    mFilterClear = settings()->value(QStringLiteral("filterClear"), false).toBool();
-    mFilterShowHideMenu = settings()->value(QStringLiteral("filterShowHideMenu"), true).toBool();
-    if (mMenu)
-    {
-        mSearchEdit->setVisible(mFilterMenu || mFilterShow);
-        mSearchEditAction->setVisible(mFilterMenu || mFilterShow);
-        if (mFilterClear && !mMenu->isVisible())
-            mSearchEdit->clear();
-    }
-    mSearchView->setMaxItemsToShow(settings()->value(QStringLiteral("filterShowMaxItems"), 10).toInt());
-    mSearchView->setMaxItemWidth(settings()->value(QStringLiteral("filterShowMaxWidth"), 300).toInt());
-
     realign();
 }
 
@@ -303,46 +246,6 @@ static void setTranslucentMenus(QMenu * menu)
     }
 }
 
-/************************************************
-
- ************************************************/
-void LXQtMainMenu::searchMenu()
-{
-    const QString text = mSearchEdit->text();
-    if (mFilterShow)
-    {
-        mHeavyMenuChanges = true;
-        const bool shown = !text.isEmpty();
-        if (mFilterShowHideMenu)
-            showHideMenuEntries(mMenu, !shown);
-        if (shown)
-            mSearchView->setFilter(text);
-        mSearchView->setVisible(shown);
-        mSearchViewAction->setVisible(shown);
-        //TODO: how to force the menu to recalculate it's size in a more elegant way?
-        mMenu->addAction(mMakeDirtyAction);
-        mMenu->removeAction(mMakeDirtyAction);
-        mHeavyMenuChanges = false;
-    }
-    if (mFilterMenu && !(mFilterShow && mFilterShowHideMenu))
-        filterMenu(mMenu, text);
-
-}
-
-/************************************************
-
- ************************************************/
-void LXQtMainMenu::setSearchFocus(QAction *action)
-{
-    if (mFilterMenu || mFilterShow)
-    {
-        if(action == mSearchEditAction)
-            mSearchEdit->setFocus();
-        else
-            mSearchEdit->clearFocus();
-    }
-}
-
 static void menuInstallEventFilter(QMenu * menu, QObject * watcher)
 {
     for (auto const & action : const_cast<QList<QAction *> const &&>(menu->actions()))
@@ -360,8 +263,6 @@ void LXQtMainMenu::buildMenu()
 {
     if(mMenu)
     {
-        mMenu->removeAction(mSearchEditAction);
-        mMenu->removeAction(mSearchViewAction);
         delete mMenu;
     }
     mMenu = new XdgMenuWidget(mXdgMenu, QLatin1String(""), &mButton);
@@ -380,24 +281,6 @@ void LXQtMainMenu::buildMenu()
     connect(mMenu, &QMenu::aboutToHide, &mHideTimer, QOverload<>::of(&QTimer::start));
     connect(mMenu, &QMenu::aboutToShow, &mHideTimer, &QTimer::stop);
 
-    mMenu->addSeparator();
-    mMenu->addAction(mSearchViewAction);
-    mMenu->addAction(mSearchEditAction);
-    connect(mMenu, &QMenu::hovered, this, &LXQtMainMenu::setSearchFocus);
-    //Note: setting readOnly to true to avoid wake-ups upon the Qt's internal "blink" cursor timer
-    //(if the readOnly is not set, the "blink" timer is active also in case the menu is not shown ->
-    //QWidgetLineControl::updateNeeded is performed w/o any need)
-    //https://bugreports.qt.io/browse/QTBUG-52021
-    connect(mMenu, &QMenu::aboutToHide, mSearchEdit, [this] {
-        mSearchEdit->setReadOnly(true);
-        if (mFilterClear)
-            mSearchEdit->clear();
-    });
-    mSearchEdit->setVisible(mFilterMenu || mFilterShow);
-    mSearchEditAction->setVisible(mFilterMenu || mFilterShow);
-    mSearchView->fillActions(mMenu);
-
-    searchMenu();
     setMenuFontSize();
 }
 
@@ -524,8 +407,6 @@ void LXQtMainMenu::setMenuFontSize()
         {
             subMenu->setFont(menuFont);
         }
-        mSearchEdit->setFont(menuFont);
-        mSearchView->setFont(menuFont);
     }
 
     // icon size the same as the font height if a custom font is selected,
@@ -537,7 +418,6 @@ void LXQtMainMenu::setMenuFontSize()
     // get the size back from the style (this will resolve DEFAULT_ICON_SIZE
     // to an actual pixel size if necessary)
     icon_size = mTopMenuStyle.pixelMetric(QStyle::PM_SmallIconSize);
-    mSearchView->setIconSize(QSize{icon_size, icon_size});
 }
 
 
@@ -652,41 +532,18 @@ bool LXQtMainMenu::eventFilter(QObject *obj, QEvent *event)
                 {
                     mMenu->move(calculatePopupWindowPos(e->size()).topLeft());
                 }
-            } else if (event->type() == QEvent::KeyPress)
-            {
-                QKeyEvent * e = dynamic_cast<QKeyEvent*>(event);
-                if (Qt::Key_Escape == e->key())
-                {
-                    if (!mSearchEdit->text().isEmpty())
-                    {
-                        mSearchEdit->setText(QString{});
-                        //filter out this to not close the menu
-                        return true;
-                    }
-                }
-            } else if (QEvent::ActionChanged == event->type()
-                    || QEvent::ActionAdded == event->type())
-            {
-                //filter this if we are performing heavy changes to reduce flicker
-                if (mHeavyMenuChanges)
-                    return true;
             }
         }
     }
     if (event->type() == QEvent::MouseButtonRelease)
     {
         QMenu * menu = qobject_cast<QMenu*>(obj);
-        QObject * sender = (obj == mSearchView->viewport() ? static_cast<QObject *>(mSearchView) : (menu != nullptr ? menu : nullptr));
+        QObject * sender = (menu != nullptr ? menu : nullptr);
         QMouseEvent * e = static_cast<QMouseEvent *>(event);
         if (sender != nullptr && e->button() == Qt::RightButton)
         {
             QPoint p = e->position().toPoint();
-            if (mSearchView == sender)
-            {
-                const auto & index = mSearchView->indexAt(p);
-                if (index != mSearchView->currentIndex())
-                    mSearchView->setCurrentIndex(index);
-            } else if (menu != nullptr)
+            if (menu != nullptr)
             {
                 const auto & action = menu->actionAt(p);
                 if (menu->activeAction() != action)

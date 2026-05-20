@@ -87,22 +87,11 @@ private:
     QMenu* mMenu;
     GlobalKeyShortcut::Action *mShortcut;
     MenuStyle mTopMenuStyle;
-    QWidgetAction * mSearchEditAction;
-    QLineEdit * mSearchEdit;
-    QWidgetAction * mSearchViewAction;
-    ActionView * mSearchView;
-    QAction * mMakeDirtyAction;
-    bool mFilterMenu; //!< searching should perform hiding nonmatching items in menu
-    bool mFilterShow; //!< searching should list matching items in top menu
-    bool mFilterClear; //!< search field should be cleared upon showing the menu
-    bool mFilterShowHideMenu; //!< while searching all (original) menu entries should be hidden
-    bool mHeavyMenuChanges; //!< flag for filtering some mMenu events while heavy changes are performed
 
     XdgMenu mXdgMenu;
 
     QTimer mDelayedPopup;
     QTimer mHideTimer;
-    QTimer mSearchTimer;
     QString mShortcutSeq;
     QString mMenuFile;
 
@@ -114,8 +103,6 @@ protected slots:
 private slots:
     void showMenu();
     void showHideMenu();
-    void searchMenu();
-    void setSearchFocus(QAction *action);
     void onRequestingCustomMenu(const QPoint& p, QObject * sender);
 };
 
