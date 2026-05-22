@@ -665,7 +665,7 @@ void LXQtTaskButton::contextMenuEvent(QContextMenuEvent* event)
     /********** State menu **********/
     menu->addSeparator();
 
-    a = menu->addAction(tr("Ma&ximize"));
+    a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-maximize")), tr("Ma&ximize"));
     a->setEnabled(mBackend->supportsAction(mWindow, LXQtTaskBarBackendAction::Maximize)
                   && state != LXQtTaskBarWindowState::Maximized
                   && state != LXQtTaskBarWindowState::Hidden);
@@ -689,7 +689,7 @@ void LXQtTaskButton::contextMenuEvent(QContextMenuEvent* event)
         connect(a, &QAction::triggered, this, &LXQtTaskButton::maximizeApplication);
     }
 
-    a = menu->addAction(tr("&Restore"));
+    a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-restore")), tr("&Restore"));
     a->setEnabled(state == LXQtTaskBarWindowState::Hidden
                   || state == LXQtTaskBarWindowState::Minimized
                   || state == LXQtTaskBarWindowState::Maximized
@@ -697,7 +697,7 @@ void LXQtTaskButton::contextMenuEvent(QContextMenuEvent* event)
                   || state == LXQtTaskBarWindowState::MaximizedHorizontally);
     connect(a, &QAction::triggered, this, &LXQtTaskButton::deMaximizeApplication);
 
-    a = menu->addAction(tr("Mi&nimize"));
+    a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-minimize")), tr("Mi&nimize"));
     a->setEnabled(mBackend->supportsAction(mWindow, LXQtTaskBarBackendAction::Minimize)
                   && state != LXQtTaskBarWindowState::Hidden
                   && state != LXQtTaskBarWindowState::Minimized);
@@ -744,7 +744,7 @@ void LXQtTaskButton::contextMenuEvent(QContextMenuEvent* event)
 
     /********** Kill menu **********/
     menu->addSeparator();
-    a = menu->addAction(tr("&Quit"));
+    a = menu->addAction(XdgIcon::fromTheme(QStringLiteral("window-close")), tr("&Quit"));
     connect(a, &QAction::triggered, this, &LXQtTaskButton::closeApplication);
 
     menu->setGeometry(mParentTaskBar->panel()->calculatePopupWindowPos(mapToGlobal(event->pos()), menu->sizeHint()));
