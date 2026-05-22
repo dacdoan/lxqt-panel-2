@@ -353,16 +353,16 @@ void LXQtTaskGroup::onClicked(bool)
 void LXQtTaskGroup::regroup()
 {
     int cont = visibleButtonsCount();
+    mSingleButton = cont == 1;
     recalculateFrameIfVisible();
 
-    if (cont == 1)
+    if (cont == 1 || (cont == 2 && windowId() >> 63))
     {
-        mSingleButton = true;
         // Get first visible button
         LXQtTaskButton * button = nullptr;
         for (LXQtTaskButton *btn : std::as_const(mButtonHash))
         {
-            if (btn->isVisibleTo(mPopup))
+            if (btn->isVisibleTo(mPopup) && (cont == 1 || (qint64)btn->windowId() > 0))
             {
                 button = btn;
                 break;
@@ -373,14 +373,14 @@ void LXQtTaskGroup::regroup()
         {
             setTextExplicitly(button->text());
             setToolTip(button->toolTip());
-            setWindowId(button->windowId());
+            if (mSingleButton) setWindowId(button->windowId());
         }
     }
     else if (cont == 0)
         hide();
     else
     {
-        mSingleButton = false;
+        if (windowId() >> 63) --cont;
         QString t = QString(QStringLiteral("%1 - %2 windows")).arg(mGroupName).arg(cont);
         setTextExplicitly(t);
         setToolTip(parentTaskBar()->isShowGroupOnHover() ? QString() : t);
