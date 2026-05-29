@@ -89,6 +89,7 @@ private:
     bool mShowWeekNumber;
     bool mShowTooltip;
     QLabel *mPopupContent;
+    QLabel *mCalendarTimeLabel;
 
     QDateTime mShownTime;
 
@@ -97,6 +98,7 @@ private:
     void setTimeText();
     QString formatDateTime(const QDateTime &datetime, const QString &timeZoneName);
     void updatePopupContent();
+    void updateCalendarTime();
     bool formatHasTimeZone(QString format);
     QString preformat(const QString &format, const QTimeZone &timeZone, const QDateTime& dateTime);
 };

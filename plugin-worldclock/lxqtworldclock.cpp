@@ -34,7 +34,7 @@
 #include <QDate>
 #include <QDialog>
 #include <QEvent>
-#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QLocale>
 #include <QScopedArrayPointer>
 #include <QTimer>
@@ -52,7 +52,8 @@ LXQtWorldClock::LXQtWorldClock(const ILXQtPanelPluginStartupInfo &startupInfo):
     mAutoRotate(true),
     mShowWeekNumber(true),
     mShowTooltip(false),
-    mPopupContent(nullptr)
+    mPopupContent(nullptr),
+    mCalendarTimeLabel(nullptr)
 {
     mMainWidget = new QWidget();
     mMainWidget->installEventFilter(this);
@@ -141,8 +142,8 @@ void LXQtWorldClock::updateTimeText()
             mRotatedWidget->adjustContentSize();
         mRotatedWidget->update();
         updatePopupContent();
-
     }
+    updateCalendarTime();
 }
 
 void LXQtWorldClock::setTimeText()
@@ -398,6 +399,7 @@ void LXQtWorldClock::activated(ActivationReason reason)
         mPopup = new LXQtWorldClockPopup(mContent);
         connect(mPopup, &QObject::destroyed, this, [this]() {
             mPopupContent = nullptr;
+            mCalendarTimeLabel = nullptr;
             mPopup = nullptr;
         });
 
@@ -405,11 +407,13 @@ void LXQtWorldClock::activated(ActivationReason reason)
         {
             mPopup->setObjectName(QLatin1String("WorldClockCalendar"));
 
-            mPopup->layout()->setContentsMargins(0, 0, 0, 0);
             QCalendarWidget *calendarWidget = new QCalendarWidget(mPopup);
             if (!mShowWeekNumber)
                 calendarWidget->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
             mPopup->layout()->addWidget(calendarWidget);
+
+            mCalendarTimeLabel = new QLabel(mPopup);
+            mPopup->layout()->addWidget(mCalendarTimeLabel);
 
             QString timeZoneName = mActiveTimeZone;
             if (timeZoneName == QLatin1String("local"))
@@ -418,6 +422,8 @@ void LXQtWorldClock::activated(ActivationReason reason)
             QTimeZone timeZone(timeZoneName.toLatin1());
             calendarWidget->setFirstDayOfWeek(Qt::Monday);
             calendarWidget->setSelectedDate(QDateTime::currentDateTime().toTimeZone(timeZone).date());
+
+            updateCalendarTime();
         }
         else
         {
@@ -447,6 +453,21 @@ QString LXQtWorldClock::formatDateTime(const QDateTime &datetime, const QString 
     QTimeZone timeZone(timeZoneName.toLatin1());
     QDateTime tzNow = datetime.toTimeZone(timeZone);
     return QLocale::system().toString(tzNow, preformat(mFormat, timeZone, tzNow));
+}
+
+void LXQtWorldClock::updateCalendarTime()
+{
+    if (mCalendarTimeLabel)
+    {
+        QDateTime now = QDateTime::currentDateTime();
+        QString timeZoneName = mActiveTimeZone;
+        if (timeZoneName == QLatin1String("local"))
+            timeZoneName = QString::fromLatin1(QTimeZone::systemTimeZoneId());
+        QTimeZone timeZone(timeZoneName.toLatin1());
+        QDateTime tzNow = now.toTimeZone(timeZone);
+
+        mCalendarTimeLabel->setText(QLocale::system().toString(tzNow, QStringLiteral("ddd, MMM d yyyy hh:mm:ss")));
+    }
 }
 
 void LXQtWorldClock::updatePopupContent()
@@ -623,8 +644,8 @@ LXQtWorldClockPopup::LXQtWorldClockPopup(QWidget *parent) :
     QDialog(parent, Qt::Window | Qt::WindowStaysOnTopHint | Qt::CustomizeWindowHint | Qt::Popup | Qt::X11BypassWindowManagerHint)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    setLayout(new QHBoxLayout(this));
-    layout()->setContentsMargins(1, 1, 1, 1);
+    setLayout(new QVBoxLayout(this));
+    layout()->setContentsMargins(0, 0, 0, 0);
 }
 
 void LXQtWorldClockPopup::show()
