@@ -104,10 +104,10 @@ void LXQtTaskGroup::contextMenuEvent(QContextMenuEvent *event)
         menu->addSeparator();
         for (LXQtTaskButton *btn : std::as_const(mButtonHash))
             if ((qint64)btn->windowId() > 0 && btn->isVisibleTo(mPopup)) {
-                QString title = btn->text();
+                QString title = QStringLiteral("✓ ") + btn->text();
                 if (title.length() > 68)
-                    title = title.left(30) + QStringLiteral("\u2026") + title.right(30);
-                a = menu->addAction(btn->windowId() == mActiveWindow ? XdgIcon::fromTheme(QStringLiteral("object-select")) : btn->icon(), title);
+                    title = title.left(30) + QStringLiteral("…") + title.right(30);
+                a = menu->addAction(btn->icon(), title);
                 connect(a, &QAction::triggered, this, [this, btn] { btn->raiseApplication(); });
             }
 
