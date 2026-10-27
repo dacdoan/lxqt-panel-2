@@ -1,0 +1,65 @@
+/*
+ * Panel
+ */
+
+#panel {
+    background:rgb(47, 52, 63);
+    border: 1px solid rgb(39, 44, 53);
+}
+
+/*
+ * Buttons
+ */
+
+QToolButton::menu-indicator {
+   image: none;
+}
+
+#closeButton {
+    qproperty-icon: url(lxqt-runner/close.svg);
+    margin: 2px;
+}
+#closeButton:hover{
+   border: 0px solid rgb(0, 0, 0);
+   qproperty-icon: url(lxqt-runner/close-hover.svg);
+}
+
+#actionButton {
+    qproperty-icon: url(lxqt-runner/down.svg);
+    color: rgb(41, 41, 41);
+    margin: 2px;
+}
+#actionButton:hover{
+    qproperty-icon: url(lxqt-runner/down-hover.svg);
+   border: 0px solid rgb(0, 0, 0);
+   margin: 2px;
+}
+
+
+
+/*
+ * Search results (For some reason the #commandList does no take the styles, just the background and the border can be changed)
+ */
+
+QListView {
+    border: 1px solid rgb(39, 44, 53);
+    background:rgb(64, 69, 82);
+ }
+
+ QListView::item:alternate {
+ }
+
+ QListView::item:selected {
+ }
+
+ QListView::item:selected:!active {
+ }
+
+ QListView::item:selected:active {
+ }
+
+ QListView::item:hover {
+ }
+
+
+
