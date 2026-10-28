@@ -44,8 +44,7 @@ LXQtPanelPlugin > QToolButton {
 Plugin > QToolButton:hover,
 Plugin > QWidget > QToolButton:hover,
 LXQtPanelPlugin > QToolButton:hover {
-    border: 1px solid rgb(39, 44, 53);
-    background: rgb(57, 61, 75);
+    background: #2e3f3a;
 }
 
 Plugin > QToolButton:pressed,
@@ -110,6 +109,7 @@ VolumePopup  > QSlider::sub-page:vertical {
 #DesktopSwitch QToolButton {
     margin: 2px 1px;
     border: 0px;
+    border-radius: 4px;
 }
 
 #DesktopSwitch QToolButton:on {
@@ -118,11 +118,7 @@ VolumePopup  > QSlider::sub-page:vertical {
 }
 
 #DesktopSwitch QToolButton:hover {
-    background: rgb(79, 86, 101);
-}
-
-#DesktopSwitch QToolButton:pressed {
-    padding: 4px;
+    background: #3c5053
 }
 
 #DesktopSwitch QToolButton[urgent="true"] {
@@ -148,10 +144,6 @@ VolumePopup  > QSlider::sub-page:vertical {
     background: rgb(79, 86, 101);
 }
 
-#QuickLaunch QToolButton:pressed {
-    padding: 4px;
-}
-
 /*
  * TaskBar
  */
@@ -168,7 +160,7 @@ VolumePopup  > QSlider::sub-page:vertical {
 }
 
 #TaskBar QToolButton:hover{
-   background: rgb(66, 77, 99);
+   background: #2e3f3a;
 }
 
 #TaskBar QToolButton[urgent="true"] {
@@ -302,7 +294,7 @@ TrayIcon {
     color: #D2D8E0;
 }
 #MainMenu:hover {
-    background: rgb(79, 86, 101);
+    background: #2e3f3a;
 }
 
 #MainMenu:pressed {
@@ -437,8 +429,7 @@ TrayIcon {
  * WorldClock
  */
 #WorldClock:hover {
-   border: 1px solid rgb(39, 44, 53);
-    background: rgb(57, 61, 75);
+    background: #2e3f3a
 }
 
 #WorldClockContent {
