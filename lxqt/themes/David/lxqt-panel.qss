@@ -397,12 +397,6 @@ TrayIcon {
     border: 2px solid transparent;
 }
 
-#PanelScreenSaver > QToolButton:pressed {
-    margin: 2px;
-    border: 2px solid transparent;
-}
-
-
 /*
  * ShowDesktop
  */
