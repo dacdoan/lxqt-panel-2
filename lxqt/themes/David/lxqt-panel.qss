@@ -289,16 +289,12 @@ TrayIcon {
 #MainMenu {
     border: 0px;
     margin: 0 1px;
-    padding: 4px 4px 5px;
+    padding: 4px 0px 5px 4px;
     qproperty-icon: url(mainmenu.svg);
     color: #D2D8E0;
 }
 #MainMenu:hover {
     background: #2e3f3a;
-}
-
-#MainMenu:pressed {
-    padding: 4px;
 }
 
 #MainMenu  QMenu {
