@@ -249,11 +249,12 @@ void LXQtTaskButton::mousePressEvent(QMouseEvent* event)
  ************************************************/
 void LXQtTaskButton::mouseReleaseEvent(QMouseEvent* event)
 {
+    bool checked = isChecked();
     QToolButton::mouseReleaseEvent(event);
     if (!sDraggging && event->button() == Qt::LeftButton)
     {
         if (mWindow >> 63) {
-            if (!isChecked()) execAction();
+            if (!checked) execAction();
         } else {
             if (mBackend->isWindowActive(mWindow))
                 {}// minimizeApplication();
