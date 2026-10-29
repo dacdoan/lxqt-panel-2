@@ -657,7 +657,7 @@ void LXQtTaskGroup::mouseReleaseEvent(QMouseEvent* event)
             if (reachEnd) for (LXQtTaskButton *btn : std::as_const(mButtonHash))
                 if ((qint64)btn->windowId() > 0 && btn->isVisibleTo(mPopup)) {
                     if (btn->windowId() == mActiveWindow) {
-                        btn->minimizeApplication();
+                        // btn->minimizeApplication();
                     } else {
                         btn->raiseApplication();
                     }
