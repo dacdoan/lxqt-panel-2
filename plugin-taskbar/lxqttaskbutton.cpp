@@ -253,15 +253,14 @@ void LXQtTaskButton::mouseReleaseEvent(QMouseEvent* event)
     if (!sDraggging && event->button() == Qt::LeftButton)
     {
         if (mWindow >> 63) {
-            execAction();
-            setChecked(false);
+            if (!isChecked()) execAction();
         } else {
             if (mBackend->isWindowActive(mWindow))
                 {}// minimizeApplication();
             else
                 raiseApplication();
-            setChecked(true);
         }
+        setChecked(true);
     }
 }
 
