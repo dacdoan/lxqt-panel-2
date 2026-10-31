@@ -33,6 +33,7 @@
 
 #include <QDialog>
 #include <QLabel>
+#include <QWidget>
 
 
 #include <LXQt/RotatedWidget>
@@ -44,6 +45,7 @@
 class ActiveLabel;
 class QTimer;
 class LXQtWorldClockPopup;
+class AnalogClock;
 
 
 class LXQtWorldClock : public QObject, public ILXQtPanelPlugin
@@ -90,6 +92,7 @@ private:
     bool mShowTooltip;
     QLabel *mPopupContent;
     QLabel *mCalendarTimeLabel;
+    AnalogClock *mAnalogClock;
 
     QDateTime mShownTime;
 
@@ -129,6 +132,23 @@ public:
     LXQtWorldClockPopup(QWidget *parent = nullptr);
 
     void show();
+};
+
+// A lightweight analog clock face widget.
+class AnalogClock : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit AnalogClock(QWidget *parent = nullptr);
+
+    // Update the displayed time (call once per second).
+    void setTime(const QTime &time);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    QTime mTime;
 };
 
 class LXQtWorldClockLibrary: public QObject, public ILXQtPanelPluginLibrary

@@ -35,8 +35,12 @@
 #include <QDialog>
 #include <QEvent>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QLocale>
+#include <QPainter>
+#include <QPen>
 #include <QScopedArrayPointer>
+#include <QSizePolicy>
 #include <QTimer>
 #include <QWheelEvent>
 #include <QToolTip>
@@ -53,7 +57,8 @@ LXQtWorldClock::LXQtWorldClock(const ILXQtPanelPluginStartupInfo &startupInfo):
     mShowWeekNumber(true),
     mShowTooltip(false),
     mPopupContent(nullptr),
-    mCalendarTimeLabel(nullptr)
+    mCalendarTimeLabel(nullptr),
+    mAnalogClock(nullptr)
 {
     mMainWidget = new QWidget();
     mMainWidget->installEventFilter(this);
@@ -400,6 +405,7 @@ void LXQtWorldClock::activated(ActivationReason reason)
         connect(mPopup, &QObject::destroyed, this, [this]() {
             mPopupContent = nullptr;
             mCalendarTimeLabel = nullptr;
+            mAnalogClock = nullptr;
             mPopup = nullptr;
         });
 
@@ -412,8 +418,21 @@ void LXQtWorldClock::activated(ActivationReason reason)
                 calendarWidget->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
             mPopup->layout()->addWidget(calendarWidget);
 
-            mCalendarTimeLabel = new QLabel(mPopup);
-            mPopup->layout()->addWidget(mCalendarTimeLabel);
+            // Row below the calendar: analog clock on the left, text label on the right
+            QWidget *bottomRow = new QWidget(mPopup);
+            QHBoxLayout *bottomLayout = new QHBoxLayout(bottomRow);
+            bottomLayout->setContentsMargins(16, 4, 0, 4);
+            bottomLayout->setSpacing(0);
+
+            mAnalogClock = new AnalogClock(bottomRow);
+            mAnalogClock->setFixedSize(64, 64);
+            bottomLayout->addWidget(mAnalogClock);
+
+            mCalendarTimeLabel = new QLabel(bottomRow);
+            mCalendarTimeLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+            bottomLayout->addWidget(mCalendarTimeLabel, 1);
+
+            mPopup->layout()->addWidget(bottomRow);
 
             QString timeZoneName = mActiveTimeZone;
             if (timeZoneName == QLatin1String("local"))
@@ -457,7 +476,7 @@ QString LXQtWorldClock::formatDateTime(const QDateTime &datetime, const QString 
 
 void LXQtWorldClock::updateCalendarTime()
 {
-    if (mCalendarTimeLabel)
+    if (mCalendarTimeLabel || mAnalogClock)
     {
         QDateTime now = QDateTime::currentDateTime();
         QString timeZoneName = mActiveTimeZone;
@@ -466,7 +485,11 @@ void LXQtWorldClock::updateCalendarTime()
         QTimeZone timeZone(timeZoneName.toLatin1());
         QDateTime tzNow = now.toTimeZone(timeZone);
 
-        mCalendarTimeLabel->setText(QLocale::system().toString(tzNow, QStringLiteral("ddd, MMM d yyyy hh:mm:ss")));
+        if (mCalendarTimeLabel)
+            mCalendarTimeLabel->setText(QLocale::system().toString(tzNow, QStringLiteral("ddd, MMM d yyyy hh:mm:ss")));
+
+        if (mAnalogClock)
+            mAnalogClock->setTime(tzNow.time());
     }
 }
 
@@ -652,6 +675,124 @@ void LXQtWorldClockPopup::show()
 {
     QDialog::show();
     activateWindow();
+}
+
+// ---------------------------------------------------------------------------
+// AnalogClock
+// ---------------------------------------------------------------------------
+
+AnalogClock::AnalogClock(QWidget *parent)
+    : QWidget(parent)
+{
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+}
+
+void AnalogClock::setTime(const QTime &time)
+{
+    mTime = time;
+    update(); // trigger a repaint
+}
+
+void AnalogClock::paintEvent(QPaintEvent * /*event*/)
+{
+    const int side = qMin(width(), height());
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // Centre and scale so the "unit circle" has radius 1
+    painter.translate(width() / 2.0, height() / 2.0);
+    painter.scale(side / 2.0, side / 2.0);
+
+    // --- face ---
+    const QColor faceColor  = palette().color(QPalette::Base);
+    const QColor rimColor   = palette().color(QPalette::Mid);
+    const QColor textColor  = palette().color(QPalette::Text);
+    const QColor hourColor  = palette().color(QPalette::Text);
+    const QColor minColor   = palette().color(QPalette::Text);
+    const QColor secColor   = QColor(220, 50, 50); // red sweep hand
+
+    // Outer rim
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(faceColor);
+    painter.drawEllipse(QPointF(0, 0), 0.95, 0.95);
+
+    // Hour tick marks
+    painter.setPen(QPen(textColor, 0.05, Qt::SolidLine, Qt::RoundCap));
+    for (int i = 0; i < 12; ++i)
+    {
+        painter.save();
+        painter.rotate(30.0 * i);
+        painter.drawLine(QPointF(0, -0.82), QPointF(0, -0.92));
+        painter.restore();
+    }
+
+    // Minute tick marks (skip where hour ticks are)
+    painter.setPen(QPen(rimColor, 0.025, Qt::SolidLine, Qt::RoundCap));
+    for (int i = 0; i < 60; ++i)
+    {
+        if (i % 5 != 0)
+        {
+            painter.save();
+            painter.rotate(6.0 * i);
+            painter.drawLine(QPointF(0, -0.87), QPointF(0, -0.92));
+            painter.restore();
+        }
+    }
+
+    if (!mTime.isNull())
+    {
+        const int h  = mTime.hour() % 12;
+        const int m  = mTime.minute();
+        const int s  = mTime.second();
+        const int ms = mTime.msec();
+
+        // Smooth angles
+        const double hourAngle   = (h * 3600 + m * 60 + s) / 43200.0 * 360.0;
+        const double minuteAngle = (m * 60 + s) / 3600.0 * 360.0;
+        const double secondAngle = (s * 1000 + ms) / 60000.0 * 360.0;
+
+        // --- hour hand ---
+        painter.save();
+        painter.rotate(hourAngle);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(hourColor);
+        // Draw as a filled rounded polygon
+        const QPointF hourPoly[] = {
+            {-0.045,  0.12},
+            { 0.045,  0.12},
+            { 0.025, -0.52},
+            {-0.025, -0.52}
+        };
+        painter.drawPolygon(hourPoly, 4);
+        painter.restore();
+
+        // --- minute hand ---
+        painter.save();
+        painter.rotate(minuteAngle);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(minColor);
+        const QPointF minPoly[] = {
+            {-0.03,  0.15},
+            { 0.03,  0.15},
+            { 0.015, -0.75},
+            {-0.015, -0.75}
+        };
+        painter.drawPolygon(minPoly, 4);
+        painter.restore();
+
+        // --- second hand ---
+        painter.save();
+        painter.rotate(secondAngle);
+        painter.setPen(QPen(secColor, 0.025, Qt::SolidLine, Qt::RoundCap));
+        painter.drawLine(QPointF(0, 0.2), QPointF(0, -0.80));
+        painter.restore();
+    }
+
+    // Centre cap
+    painter.setPen(QPen(secColor, 0.02));
+    painter.setBrush(faceColor);
+    painter.drawEllipse(QPointF(0, 0), 0.03, 0.03);
 }
 
 bool LXQtWorldClock::eventFilter(QObject * watched, QEvent * event)
