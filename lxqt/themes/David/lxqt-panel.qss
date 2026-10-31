@@ -117,10 +117,6 @@ VolumePopup  > QSlider::sub-page:vertical {
     font: bold;
 }
 
-#DesktopSwitch QToolButton:hover {
-    background: #3c5053
-}
-
 #DesktopSwitch QToolButton[urgent="true"] {
     color: #D2D8E0;
     background: #5294e2;
