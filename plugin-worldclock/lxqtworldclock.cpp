@@ -705,12 +705,12 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
     painter.scale(side / 2.0, side / 2.0);
 
     // --- face ---
-    const QColor faceColor  = palette().color(QPalette::Base);
+    const QColor faceColor  = QColor(255, 255, 255);
     const QColor rimColor   = QColor(127, 127, 127);
-    const QColor textColor  = palette().color(QPalette::Text);
-    const QColor hourColor  = palette().color(QPalette::Text);
-    const QColor minColor   = palette().color(QPalette::Text);
-    const QColor secColor   = QColor(220, 50, 50); // red sweep hand
+    const QColor textColor  = QColor(0, 0, 0);
+    const QColor hourColor  = QColor(0, 0, 0);
+    const QColor minColor   = QColor(0, 0, 0);
+    const QColor secColor   = QColor(220, 45, 45); // red sweep hand
 
     // Outer rim
     painter.setPen(Qt::NoPen);
