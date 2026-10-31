@@ -706,7 +706,7 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
 
     // --- face ---
     const QColor faceColor  = palette().color(QPalette::Base);
-    const QColor rimColor   = palette().color(QPalette::Mid);
+    const QColor rimColor   = QColor(127, 127, 127);
     const QColor textColor  = palette().color(QPalette::Text);
     const QColor hourColor  = palette().color(QPalette::Text);
     const QColor minColor   = palette().color(QPalette::Text);
