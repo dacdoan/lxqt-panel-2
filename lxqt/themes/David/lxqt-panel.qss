@@ -107,9 +107,9 @@ VolumePopup  > QSlider::sub-page:vertical {
  * Desktopswitch
  */
 #DesktopSwitch QToolButton {
-    margin: 2px 1px;
-    border: 0px;
-    border-radius: 4px;
+    margin: 4px 4px 4px 0;
+    border: 1px solid #3c5053;
+    border-radius: 6px;
 }
 
 #DesktopSwitch QToolButton:on {
@@ -289,7 +289,7 @@ TrayIcon {
 #MainMenu {
     border: 0px;
     margin: 0 1px;
-    padding: 4px 0px 5px 4px;
+    padding: 4px 0px 5px 2px;
     qproperty-icon: url(mainmenu.svg);
     color: #D2D8E0;
 }
@@ -423,8 +423,6 @@ TrayIcon {
 }
 
 #WorldClockContent {
-    margin-right: 2px;
-    margin-left: 2px;
-    padding: 2px;
+    margin-left: 4px;
     color: #D2D8E0;
 }
