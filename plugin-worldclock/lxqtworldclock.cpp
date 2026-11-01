@@ -421,11 +421,11 @@ void LXQtWorldClock::activated(ActivationReason reason)
             // Row below the calendar: analog clock on the left, text label on the right
             QWidget *bottomRow = new QWidget(mPopup);
             QHBoxLayout *bottomLayout = new QHBoxLayout(bottomRow);
-            bottomLayout->setContentsMargins(16, 4, 0, 4);
+            bottomLayout->setContentsMargins(16, 8, 0, 12);
             bottomLayout->setSpacing(0);
 
             mAnalogClock = new AnalogClock(bottomRow);
-            mAnalogClock->setFixedSize(64, 64);
+            mAnalogClock->setFixedSize(96, 96);
             bottomLayout->addWidget(mAnalogClock);
 
             mCalendarTimeLabel = new QLabel(bottomRow);
@@ -706,7 +706,7 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
 
     // --- face ---
     const QColor faceColor  = QColor(255, 255, 255);
-    const QColor rimColor   = QColor(127, 127, 127);
+    const QColor rimColor   = QColor(167, 167, 167);
     const QColor textColor  = QColor(0, 0, 0);
     const QColor hourColor  = QColor(0, 0, 0);
     const QColor minColor   = QColor(0, 0, 0);
@@ -715,16 +715,45 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
     // Outer rim
     painter.setPen(Qt::NoPen);
     painter.setBrush(faceColor);
-    painter.drawEllipse(QPointF(0, 0), 0.95, 0.95);
+    painter.drawEllipse(QPointF(0, 0), 1, 1);
 
     // Hour tick marks
-    painter.setPen(QPen(textColor, 0.05, Qt::SolidLine, Qt::RoundCap));
+    painter.setPen(QPen(textColor, 0.025, Qt::SolidLine, Qt::RoundCap));
     for (int i = 0; i < 12; ++i)
     {
         painter.save();
         painter.rotate(30.0 * i);
-        painter.drawLine(QPointF(0, -0.82), QPointF(0, -0.92));
+        painter.drawLine(QPointF(0, -0.90), QPointF(0, -0.96));
         painter.restore();
+    }
+
+    // Hour numbers 1-12:
+    // Navigate to each position in the scaled coord system, extract the
+    // device-pixel coordinate, then reset the transform before drawText so
+    // the font pixel size is NOT multiplied by the painter's scale factor.
+    {
+        QFont numFont;
+        numFont.setPixelSize(qMax(1, static_cast<int>(side * 0.15)));
+        numFont.setBold(true);
+        painter.setPen(textColor);
+        const double numRadius = 0.72;
+        const double halfBox   = numFont.pixelSize() * 0.72; // in device px
+
+        for (int i = 1; i <= 12; ++i)
+        {
+            painter.save();
+            painter.rotate(30.0 * i);            // aim at hour i
+            painter.translate(0.0, -numRadius);  // step to number ring
+            // Map the current origin (= number centre) to device coordinates
+            QPointF devPos = painter.worldTransform().map(QPointF(0.0, 0.0));
+            // Reset transform: font px now equals one physical screen pixel
+            painter.resetTransform();
+            painter.setFont(numFont);
+            QRectF box(devPos.x() - halfBox, devPos.y() - halfBox,
+                       halfBox * 2.0, halfBox * 2.0);
+            painter.drawText(box, Qt::AlignCenter, QString::number(i));
+            painter.restore();
+        }
     }
 
     // Minute tick marks (skip where hour ticks are)
@@ -735,7 +764,7 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
         {
             painter.save();
             painter.rotate(6.0 * i);
-            painter.drawLine(QPointF(0, -0.87), QPointF(0, -0.92));
+            painter.drawLine(QPointF(0, -0.90), QPointF(0, -0.96));
             painter.restore();
         }
     }
@@ -761,8 +790,8 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
         const QPointF hourPoly[] = {
             {-0.045,  0.12},
             { 0.045,  0.12},
-            { 0.025, -0.52},
-            {-0.025, -0.52}
+            { 0.03, -0.52},
+            {-0.03, -0.52}
         };
         painter.drawPolygon(hourPoly, 4);
         painter.restore();
@@ -775,8 +804,8 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
         const QPointF minPoly[] = {
             {-0.03,  0.15},
             { 0.03,  0.15},
-            { 0.015, -0.75},
-            {-0.015, -0.75}
+            { 0.02, -0.94},
+            {-0.02, -0.94}
         };
         painter.drawPolygon(minPoly, 4);
         painter.restore();
@@ -785,7 +814,7 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
         painter.save();
         painter.rotate(secondAngle);
         painter.setPen(QPen(secColor, 0.025, Qt::SolidLine, Qt::RoundCap));
-        painter.drawLine(QPointF(0, 0.2), QPointF(0, -0.80));
+        painter.drawLine(QPointF(0, 0.2), QPointF(0, -0.96));
         painter.restore();
     }
 
