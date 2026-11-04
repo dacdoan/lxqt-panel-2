@@ -175,6 +175,11 @@ public:
     double timeZone() const { return mTimeZone; }
     void setTimeZone(double tz) { mTimeZone = tz; updateCells(); }
 
+    QTimeZone activeTimeZone() const { return mActiveTimeZone; }
+    void setActiveTimeZone(const QTimeZone &tz) { mActiveTimeZone = tz; updateCells(); }
+
+    QDate todayDate() const;
+
     void reload(const QTimeZone &timeZone = QTimeZone());
 
 protected:
@@ -182,6 +187,7 @@ protected:
 
 private:
     double mTimeZone;
+    QTimeZone mActiveTimeZone;
 };
 
 class LXQtWorldClockLibrary: public QObject, public ILXQtPanelPluginLibrary

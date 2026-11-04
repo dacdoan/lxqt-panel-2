@@ -449,6 +449,7 @@ void LXQtWorldClock::activated(ActivationReason reason)
 
             QTimeZone timeZone(timeZoneName.toLatin1());
             calendarWidget->setFirstDayOfWeek(Qt::Monday);
+            calendarWidget->setActiveTimeZone(timeZone);
             calendarWidget->setSelectedDate(QDateTime::currentDateTime().toTimeZone(timeZone).date());
 
             connect(todayButton, &QPushButton::clicked, this, [this, calendarWidget, timeZone]() {
@@ -948,10 +949,18 @@ LunarCalendarWidget::LunarCalendarWidget(QWidget *parent)
 {
 }
 
+QDate LunarCalendarWidget::todayDate() const
+{
+    if (mActiveTimeZone.isValid())
+        return QDateTime::currentDateTime().toTimeZone(mActiveTimeZone).date();
+    return QDate::currentDate();
+}
+
 void LunarCalendarWidget::reload(const QTimeZone &timeZone)
 {
-    QTimeZone tz = timeZone.isValid() ? timeZone : QTimeZone(QTimeZone::systemTimeZoneId());
-    QDate today = QDateTime::currentDateTime().toTimeZone(tz).date();
+    if (timeZone.isValid())
+        mActiveTimeZone = timeZone;
+    QDate today = todayDate();
     setSelectedDate(today);
     showSelectedDate();
     updateCells();
@@ -1009,6 +1018,21 @@ void LunarCalendarWidget::paintCell(QPainter *painter, const QRect &rect, QDate 
 
     if (!date.isValid())
         return;
+
+    QDate today = todayDate();
+    if (date == today && date != selectedDate())
+    {
+        painter->save();
+        QColor highlight = palette().color(QPalette::Highlight);
+        QColor todayBg = highlight;
+        todayBg.setAlpha(45);
+        painter->fillRect(rect.adjusted(1, 1, -1, -1), todayBg);
+
+        QPen pen(highlight, 1);
+        painter->setPen(pen);
+        painter->drawRect(rect.adjusted(1, 1, -1, -1));
+        painter->restore();
+    }
 
     LunarDate lunar = solarToLunar(date, mTimeZone);
 
