@@ -425,7 +425,7 @@ void LXQtWorldClock::activated(ActivationReason reason)
             bottomLayout->setSpacing(0);
 
             mAnalogClock = new AnalogClock(bottomRow);
-            mAnalogClock->setFixedSize(96, 96);
+            mAnalogClock->setFixedSize(72, 72);
             bottomLayout->addWidget(mAnalogClock);
 
             mCalendarTimeLabel = new QLabel(bottomRow);
@@ -706,7 +706,7 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
 
     // --- face ---
     const QColor faceColor  = QColor(255, 255, 255);
-    const QColor rimColor   = QColor(167, 167, 167);
+    const QColor rimColor   = QColor(197, 197, 197);
     const QColor textColor  = QColor(0, 0, 0);
     const QColor hourColor  = QColor(0, 0, 0);
     const QColor minColor   = QColor(0, 0, 0);
@@ -734,7 +734,7 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
     {
         QFont numFont;
         numFont.setPixelSize(qMax(1, static_cast<int>(side * 0.15)));
-        numFont.setBold(true);
+        numFont.setWeight(QFont::DemiBold);
         painter.setPen(textColor);
         const double numRadius = 0.72;
         const double halfBox   = numFont.pixelSize() * 0.72; // in device px
@@ -802,8 +802,8 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
         painter.setPen(Qt::NoPen);
         painter.setBrush(minColor);
         const QPointF minPoly[] = {
-            {-0.03,  0.15},
-            { 0.03,  0.15},
+            {-0.03,  0.16},
+            { 0.03,  0.16},
             { 0.02, -0.94},
             {-0.02, -0.94}
         };
@@ -814,7 +814,7 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
         painter.save();
         painter.rotate(secondAngle);
         painter.setPen(QPen(secColor, 0.025, Qt::SolidLine, Qt::RoundCap));
-        painter.drawLine(QPointF(0, 0.2), QPointF(0, -0.96));
+        painter.drawLine(QPointF(0, 0.24), QPointF(0, -0.96));
         painter.restore();
     }
 
