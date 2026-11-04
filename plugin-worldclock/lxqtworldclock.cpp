@@ -500,8 +500,15 @@ void LXQtWorldClock::updateCalendarTime()
         QTimeZone timeZone(timeZoneName.toLatin1());
         QDateTime tzNow = now.toTimeZone(timeZone);
 
-        if (mCalendarTimeLabel)
-            mCalendarTimeLabel->setText(QLocale::system().toString(tzNow, QStringLiteral("ddd, MMM d yyyy hh:mm:ss")));
+        if (mCalendarTimeLabel) {
+            LunarDate lunar = LunarCalendarWidget::solarToLunar(tzNow.date());
+            QString lunarStr = QStringLiteral("%1/%2%3 ÂL %4")
+                .arg(lunar.day)
+                .arg(lunar.month)
+                .arg(lunar.leap ? QStringLiteral("⁺") : QString())
+                .arg(lunar.year != tzNow.date().year() ? QString::number(lunar.year) : QString());
+            mCalendarTimeLabel->setText(QLocale::system().toString(tzNow, QStringLiteral("ddd, MMM d yyyy\n%1\nhh:mm:ss")).arg(lunarStr));
+        }
 
         if (mAnalogClock)
             mAnalogClock->setTime(tzNow.time());
