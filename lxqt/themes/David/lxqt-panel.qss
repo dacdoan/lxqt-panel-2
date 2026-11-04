@@ -183,6 +183,10 @@ LXQtWorldClockPopup QLabel {
     padding: 2px 12px 6px;
     color: rgb(255, 253, 249);
 }
+LXQtWorldClockPopup QPushButton {
+    background-color:rgb(64, 69, 82);
+    color: rgb(255, 253, 249);
+}
 
 QCalendarWidget #qt_calendar_navigationbar,
 QCalendarWidget #qt_calendar_navigationbar * {
