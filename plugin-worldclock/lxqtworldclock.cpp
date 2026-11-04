@@ -1045,7 +1045,7 @@ void LunarCalendarWidget::paintCell(QPainter *painter, const QRect &rect, QDate 
 
     QString text;
     if (lunar.day == 1)
-        text = QStringLiteral("1/%1%2").arg(lunar.month).arg(lunar.leap ? QStringLiteral("*") : QString());
+        text = QStringLiteral("1/%1%2").arg(lunar.month).arg(lunar.leap ? QStringLiteral("⁺") : QString());
     else
         text = QString::number(lunar.day);
 
@@ -1066,7 +1066,9 @@ void LunarCalendarWidget::paintCell(QPainter *painter, const QRect &rect, QDate 
         painter->setPen(QColor(255, 255, 255));
     } else if (date.month() != monthShown()) {
         painter->setPen(QColor(128, 128, 128));
-    } else if (date.dayOfWeek() > 5 || lunar.day == 1 || lunar.day == 15) {
+    } else if (lunar.day == 1 || lunar.day == 15) {
+        painter->setPen(QColor(255, 215, 0));
+    } else if (date.dayOfWeek() > 5) {
         painter->setPen(QColor(220, 0, 0));
     } else {
         painter->setPen(QColor(220, 220, 220));
