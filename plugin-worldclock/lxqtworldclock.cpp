@@ -44,6 +44,7 @@
 #include <QLocale>
 #include <QPainter>
 #include <QPen>
+#include <QPushButton>
 #include <QScopedArrayPointer>
 #include <QSizePolicy>
 #include <QTimer>
@@ -426,7 +427,7 @@ void LXQtWorldClock::activated(ActivationReason reason)
             // Row below the calendar: analog clock on the left, text label on the right
             QWidget *bottomRow = new QWidget(mPopup);
             QHBoxLayout *bottomLayout = new QHBoxLayout(bottomRow);
-            bottomLayout->setContentsMargins(16, 8, 0, 12);
+            bottomLayout->setContentsMargins(16, 8, 16, 12);
             bottomLayout->setSpacing(0);
 
             mAnalogClock = new AnalogClock(bottomRow);
@@ -437,6 +438,9 @@ void LXQtWorldClock::activated(ActivationReason reason)
             mCalendarTimeLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
             bottomLayout->addWidget(mCalendarTimeLabel, 1);
 
+            QPushButton *todayButton = new QPushButton(tr("Today"), bottomRow);
+            bottomLayout->addWidget(todayButton);
+
             mPopup->layout()->addWidget(bottomRow);
 
             QString timeZoneName = mActiveTimeZone;
@@ -446,6 +450,11 @@ void LXQtWorldClock::activated(ActivationReason reason)
             QTimeZone timeZone(timeZoneName.toLatin1());
             calendarWidget->setFirstDayOfWeek(Qt::Monday);
             calendarWidget->setSelectedDate(QDateTime::currentDateTime().toTimeZone(timeZone).date());
+
+            connect(todayButton, &QPushButton::clicked, this, [this, calendarWidget, timeZone]() {
+                calendarWidget->reload(timeZone);
+                updateCalendarTime();
+            });
 
             updateCalendarTime();
         }
@@ -937,6 +946,15 @@ LunarCalendarWidget::LunarCalendarWidget(QWidget *parent)
     : QCalendarWidget(parent),
       mTimeZone(7.0)
 {
+}
+
+void LunarCalendarWidget::reload(const QTimeZone &timeZone)
+{
+    QTimeZone tz = timeZone.isValid() ? timeZone : QTimeZone(QTimeZone::systemTimeZoneId());
+    QDate today = QDateTime::currentDateTime().toTimeZone(tz).date();
+    setSelectedDate(today);
+    showSelectedDate();
+    updateCells();
 }
 
 LunarDate LunarCalendarWidget::solarToLunar(int dd, int mm, int yy, double timeZone)

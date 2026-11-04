@@ -175,6 +175,8 @@ public:
     double timeZone() const { return mTimeZone; }
     void setTimeZone(double tz) { mTimeZone = tz; updateCells(); }
 
+    void reload(const QTimeZone &timeZone = QTimeZone());
+
 protected:
     void paintCell(QPainter *painter, const QRect &rect, QDate date) const override;
 
