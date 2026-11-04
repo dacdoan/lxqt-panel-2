@@ -31,6 +31,7 @@
 
 #include <QTimeZone>
 
+#include <QCalendarWidget>
 #include <QDialog>
 #include <QLabel>
 #include <QWidget>
@@ -149,6 +150,36 @@ protected:
 
 private:
     QTime mTime;
+};
+
+struct LunarDate
+{
+    int day;
+    int month;
+    int year;
+    int leap;
+};
+
+class LunarCalendarWidget : public QCalendarWidget
+{
+    Q_OBJECT
+public:
+    explicit LunarCalendarWidget(QWidget *parent = nullptr);
+
+    static LunarDate solarToLunar(int day, int month, int year, double timeZone = 7.0);
+    static LunarDate solarToLunar(const QDate &date, double timeZone = 7.0)
+    {
+        return solarToLunar(date.day(), date.month(), date.year(), timeZone);
+    }
+
+    double timeZone() const { return mTimeZone; }
+    void setTimeZone(double tz) { mTimeZone = tz; updateCells(); }
+
+protected:
+    void paintCell(QPainter *painter, const QRect &rect, QDate date) const override;
+
+private:
+    double mTimeZone;
 };
 
 class LXQtWorldClockLibrary: public QObject, public ILXQtPanelPluginLibrary

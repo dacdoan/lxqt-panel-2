@@ -30,6 +30,11 @@
 
 #include <LXQt/Globals>
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#include <cmath>
+
 #include <QCalendarWidget>
 #include <QDate>
 #include <QDialog>
@@ -413,7 +418,7 @@ void LXQtWorldClock::activated(ActivationReason reason)
         {
             mPopup->setObjectName(QLatin1String("WorldClockCalendar"));
 
-            QCalendarWidget *calendarWidget = new QCalendarWidget(mPopup);
+            LunarCalendarWidget *calendarWidget = new LunarCalendarWidget(mPopup);
             if (!mShowWeekNumber)
                 calendarWidget->setVerticalHeaderFormat(QCalendarWidget::NoVerticalHeader);
             mPopup->layout()->addWidget(calendarWidget);
@@ -822,6 +827,206 @@ void AnalogClock::paintEvent(QPaintEvent * /*event*/)
     painter.setPen(QPen(secColor, 0.02));
     painter.setBrush(faceColor);
     painter.drawEllipse(QPointF(0, 0), 0.03, 0.03);
+}
+
+// ---------------------------------------------------------------------------
+// LunarCalendarWidget & Vietnamese Lunar Calendar Algorithm
+// Based on Ho Ngoc Duc's algorithm (amlich.py)
+// ---------------------------------------------------------------------------
+
+namespace {
+
+#ifndef M_PI
+constexpr double M_PI = 3.14159265358979323846;
+#endif
+
+// Julian day number from Gregorian date dd/mm/yyyy
+int jdFromDate(int dd, int mm, int yy)
+{
+    int a = (14 - mm) / 12;
+    int y = yy + 4800 - a;
+    int m = mm + 12 * a - 3;
+    int jd = dd + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
+    if (jd < 2299161)
+        jd = dd + (153 * m + 2) / 5 + 365 * y + y / 4 - 32083;
+    return jd;
+}
+
+// Time of k-th new moon after the new moon of 1/1/1900 13:52 UTC
+double newMoon(double k)
+{
+    const double T = k / 1236.85;
+    const double T2 = T * T;
+    const double T3 = T2 * T;
+    const double dr = M_PI / 180.0;
+    double Jd1 = 2415020.75933 + 29.53058868 * k + 0.0001178 * T2 - 0.000000155 * T3;
+    Jd1 += 0.00033 * std::sin((166.56 + 132.87 * T - 0.009173 * T2) * dr);
+    const double M = 359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3;
+    const double Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3;
+    const double F = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3;
+    double C1 = (0.1734 - 0.000393 * T) * std::sin(M * dr) + 0.0021 * std::sin(2.0 * dr * M);
+    C1 = C1 - 0.4068 * std::sin(Mpr * dr) + 0.0161 * std::sin(dr * 2.0 * Mpr);
+    C1 = C1 - 0.0004 * std::sin(dr * 3.0 * Mpr);
+    C1 = C1 + 0.0104 * std::sin(dr * 2.0 * F) - 0.0051 * std::sin(dr * (M + Mpr));
+    C1 = C1 - 0.0074 * std::sin(dr * (M - Mpr)) + 0.0004 * std::sin(dr * (2.0 * F + M));
+    C1 = C1 - 0.0004 * std::sin(dr * (2.0 * F - M)) - 0.0006 * std::sin(dr * (2.0 * F + Mpr));
+    C1 = C1 + 0.0010 * std::sin(dr * (2.0 * F - Mpr)) + 0.0005 * std::sin(dr * (2.0 * Mpr + M));
+    double deltat;
+    if (T < -11.0)
+        deltat = 0.001 + 0.000839 * T + 0.0002261 * T2 - 0.00000845 * T3 - 0.000000081 * T * T3;
+    else
+        deltat = -0.000278 + 0.000265 * T + 0.000262 * T2;
+
+    return Jd1 + C1 - deltat;
+}
+
+// Longitude of the sun
+double sunLongitude(double jdn)
+{
+    const double T = (jdn - 2451545.0) / 36525.0;
+    const double T2 = T * T;
+    const double dr = M_PI / 180.0;
+    const double M = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T * T2;
+    const double L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
+    double DL = (1.914600 - 0.004817 * T - 0.000014 * T2) * std::sin(dr * M);
+    DL += (0.019993 - 0.000101 * T) * std::sin(dr * 2.0 * M) + 0.000290 * std::sin(dr * 3.0 * M);
+    double L = L0 + DL;
+    L *= dr;
+    L -= M_PI * 2.0 * std::floor(L / (M_PI * 2.0));
+    return L;
+}
+
+int getSunLongitude(int dayNumber, double timeZone)
+{
+    return static_cast<int>(std::floor(sunLongitude(dayNumber - 0.5 - timeZone / 24.0) / M_PI * 6.0));
+}
+
+int getNewMoonDay(double k, double timeZone)
+{
+    return static_cast<int>(std::floor(newMoon(k) + 0.5 + timeZone / 24.0));
+}
+
+int getLunarMonth11(int yy, double timeZone)
+{
+    double off = jdFromDate(31, 12, yy) - 2415021.0;
+    double k = std::floor(off / 29.530588853);
+    int nm = getNewMoonDay(k, timeZone);
+    int sunLong = getSunLongitude(nm, timeZone);
+    if (sunLong >= 9)
+        nm = getNewMoonDay(k - 1, timeZone);
+    return nm;
+}
+
+int getLeapMonthOffset(int a11, double timeZone)
+{
+    double k = std::floor((a11 - 2415021.076998695) / 29.530588853 + 0.5);
+    int arc = getSunLongitude(getNewMoonDay(k + 1, timeZone), timeZone);
+    for (int i = 2; i < 15; ++i)
+    {
+        int last = arc;
+        arc = getSunLongitude(getNewMoonDay(k + i, timeZone), timeZone);
+        if (arc == last)
+            return i - 1;
+    }
+    return 13;
+}
+
+} // namespace
+
+LunarCalendarWidget::LunarCalendarWidget(QWidget *parent)
+    : QCalendarWidget(parent),
+      mTimeZone(7.0)
+{
+}
+
+LunarDate LunarCalendarWidget::solarToLunar(int dd, int mm, int yy, double timeZone)
+{
+    int dayNumber = jdFromDate(dd, mm, yy);
+    double k = std::floor((dayNumber - 2415021.076998695) / 29.530588853);
+    int monthStart = getNewMoonDay(k + 1, timeZone);
+    if (monthStart > dayNumber)
+        monthStart = getNewMoonDay(k, timeZone);
+
+    int a11 = getLunarMonth11(yy, timeZone);
+    int b11 = a11;
+    int lunarYear;
+    if (a11 >= monthStart)
+    {
+        lunarYear = yy;
+        a11 = getLunarMonth11(yy - 1, timeZone);
+    }
+    else
+    {
+        lunarYear = yy + 1;
+        b11 = getLunarMonth11(yy + 1, timeZone);
+    }
+
+    int lunarDay = dayNumber - monthStart + 1;
+    int diff = static_cast<int>(std::floor((monthStart - a11) / 29.0));
+    int lunarLeap = 0;
+    int lunarMonth = diff + 11;
+    if (b11 - a11 > 365)
+    {
+        int leapMonthDiff = getLeapMonthOffset(a11, timeZone);
+        if (diff >= leapMonthDiff)
+        {
+            lunarMonth = diff + 10;
+            if (diff == leapMonthDiff)
+                lunarLeap = 1;
+        }
+    }
+
+    if (lunarMonth > 12)
+        lunarMonth -= 12;
+
+    if (lunarMonth >= 11 && diff < 4)
+        lunarYear -= 1;
+
+    return {lunarDay, lunarMonth, lunarYear, lunarLeap};
+}
+
+void LunarCalendarWidget::paintCell(QPainter *painter, const QRect &rect, QDate date) const
+{
+    QCalendarWidget::paintCell(painter, rect, date);
+
+    if (!date.isValid())
+        return;
+
+    LunarDate lunar = solarToLunar(date, mTimeZone);
+
+    QString text;
+    if (lunar.day == 1)
+        text = QStringLiteral("1/%1%2").arg(lunar.month).arg(lunar.leap ? QStringLiteral("*") : QString());
+    else
+        text = QString::number(lunar.day);
+
+    painter->save();
+
+    QFont font = painter->font();
+    if (font.pointSizeF() > 0)
+        font.setPointSizeF(qMax(6.0, font.pointSizeF() * 0.72));
+    else
+        font.setPixelSize(qMax(8, font.pixelSize() * 7 / 10));
+
+    if (lunar.day == 1 || lunar.day == 15)
+        font.setBold(true);
+
+    painter->setFont(font);
+
+    if (date == selectedDate()) {
+        painter->setPen(QColor(255, 255, 255));
+    } else if (date.month() != monthShown()) {
+        painter->setPen(QColor(128, 128, 128));
+    } else if (date.dayOfWeek() > 5 || lunar.day == 1 || lunar.day == 15) {
+        painter->setPen(QColor(220, 0, 0));
+    } else {
+        painter->setPen(QColor(220, 220, 220));
+    }
+
+    QRect lunarRect = rect.adjusted(1, 1, -2, -1);
+    painter->drawText(lunarRect, Qt::AlignRight | Qt::AlignBottom, text);
+
+    painter->restore();
 }
 
 bool LXQtWorldClock::eventFilter(QObject * watched, QEvent * event)
