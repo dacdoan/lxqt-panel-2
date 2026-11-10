@@ -1030,12 +1030,7 @@ void LunarCalendarWidget::paintCell(QPainter *painter, const QRect &rect, QDate 
     if (date == today && date != selectedDate())
     {
         painter->save();
-        QColor highlight = palette().color(QPalette::Highlight);
-        QColor todayBg = highlight;
-        todayBg.setAlpha(45);
-        painter->fillRect(rect.adjusted(1, 1, -1, -1), todayBg);
-
-        QPen pen(highlight, 1);
+        QPen pen(palette().color(QPalette::Highlight), 1);
         painter->setPen(pen);
         painter->drawRect(rect.adjusted(1, 1, -1, -1));
         painter->restore();
@@ -1074,7 +1069,7 @@ void LunarCalendarWidget::paintCell(QPainter *painter, const QRect &rect, QDate 
         painter->setPen(QColor(220, 220, 220));
     }
 
-    QRect lunarRect = rect.adjusted(1, 1, -2, -1);
+    QRect lunarRect = rect.adjusted(1, 1, -3, -1);
     painter->drawText(lunarRect, Qt::AlignRight | Qt::AlignBottom, text);
 
     painter->restore();
